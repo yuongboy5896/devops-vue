@@ -15,11 +15,11 @@
         <el-form-item prop="password">
           <el-input v-model="loginForm.password" prefix-icon="iconfont icon-3702mima" type="password"></el-input>
         </el-form-item>
-        <el-form-item prop="id">
-          <el-input v-model="loginForm.id" prefix-icon="iconfont icon-3702mima" ></el-input>
+        <el-form-item >
+          <el-input v-model="loginForm.value" prefix-icon="iconfont icon-3702mima" ></el-input>
         </el-form-item>
-         <el-form-item prop="id">
-          <div>   <img :src="vertifycha" alt=""  @click="getVertifycha"> </div>
+         <el-form-item >
+          <div>   <img :src="vertifycha.data" alt=""  @click="getVertifycha"> </div>
         </el-form-item>
         <!-- 按钮区域 -->
         <el-form-item class="btns">
@@ -30,7 +30,7 @@
       </el-form>
     </div>
      <!-- 添加用户的对话框 -->
-    <el-dialog title="添加用户" :visible.sync="addDialogVisible" width="50%" @close="addDiaglogClosed">
+    <el-dialog title="添加用户" :visible.sync="addDialogVisible" width="50%" @close="addDialogClosed">
       <!-- 内容主体区域 -->
       <el-form :model="addUserForm" :rules="addFormRules" ref="addFormRef" label-width="70px">
         <el-form-item label="用户名" prop="username">
@@ -86,6 +86,8 @@ export default {
       loginForm: {
         username: 'admin',
         password: '123456',
+        value:'',
+        //省事把验证码id存到这里
         id:''
       },
       addUserForm: {
@@ -95,7 +97,10 @@ export default {
         mobile: "",
       },
       //验证码
-      vertifycha:"",
+      vertifycha: {
+          id: "",
+          data: ""
+      },
       // 这是表单的验证规则对象
       loginFormRules: {
         // 验证用户名是否合法
@@ -110,7 +115,7 @@ export default {
         ]
       },
       // 用户验证
-      AddFormRules: {
+      addFormRules: {
         username: [
           { required: true, message: "请输入用户名称", trigger: "blur" },
           { min: 3, max: 5, message: "长度在 3 到 5 个字符", trigger: "blur" },
@@ -145,12 +150,12 @@ export default {
       this.$refs.loginFormRef.validate(async valid => {
         if (!valid) return
         const { data: res } = await this.$http.post('/api/login_pwd', this.loginForm)
-        if (res.meta.status !== 200) return this.$message.error('登录失败！')
+        if (res.code !== 0) return this.$message.error('登录失败！')
         this.$message.success('登录成功')
         // 1. 将登录成功之后的 token，保存到客户端的 sessionStorage 中
         //   1.1 项目中出了登录之外的其他API接口，必须在登录之后才能访问
         //   1.2 token 只应在当前网站打开期间生效，所以将 token 保存在 sessionStorage 中
-        window.sessionStorage.setItem('token', res.data.token)
+       //# window.sessionStorage.setItem('token', res.data.token)
         // 2. 通过编程式导航跳转到后台主页，路由地址是 /home
         this.$router.push('/home')
       })
@@ -161,16 +166,22 @@ export default {
       if (res.code !== 0) {
         return this.$message.error("获取验证码识别失败！");
       }
-      this.vertifycha = res.data.captcha_result.base_64_blob;
+      //console.log(res);
+      this.loginForm.id = res.data.captcha_result.id;
+      this.vertifycha.id = res.data.captcha_result.id;
+      this.vertifycha.data = res.data.captcha_result.base_64_blob;
     },
     // 注册用户
     async addUser() {
       this.$refs.addFormRef.validate(async (valid) => {
-        console.log(valid);
+        //console.log(valid);
         if (!valid) return;
         const { data: res } = await this.$http.post("/api/adduser", this.addUserForm);
-        if (res.meta.status !== 201) {
-          this.$message.error("添加用户失败！");
+        console.log(res);
+        console.log(res.code);
+        if (res.code !== 1) {
+          this.$message.error("添加用户失败或用户已存在！！");
+          return
         }
         this.$message.success("添加用户成功！");
         // 隐藏添加用户的对话框
@@ -179,7 +190,7 @@ export default {
       
     },
     // 清空注册字段
-    addDiaglgoClosed() {
+    addDialogClosed() {
       this.$refs.addFormRef.resetFields();
     },
 
