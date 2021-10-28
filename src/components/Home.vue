@@ -62,10 +62,6 @@
 </template>
 
 <script>
-</script>
-
-
-<script>
 export default {
   data() {
     return {
@@ -100,26 +96,19 @@ export default {
       this.menulist = [
         {
           id: 125,
-          authName: "项目管理",
-          path: "webprojects",
+          authName: "资源管理",
+          path: "moduleinfo",
           children: [
             {
               id: 110,
-              authName: "前端",
-              path: "webprojects",
+              authName: "应用模块",
+              path: "moduleinfo",
               children: [],
               order: null,
             },
             {
               id: 111,
               authName: "后端",
-              path: "servicproject",
-              children: [],
-              order: null,
-            },
-            {
-              id: 112,
-              authName: "中间件",
               path: "servicproject",
               children: [],
               order: null,

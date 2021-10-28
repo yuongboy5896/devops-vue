@@ -3,7 +3,8 @@ import VueRouter from 'vue-router'
 import Home from '../components/Home.vue'
 import Login from '../components/Login.vue'
 import Welcome from '../components/Welcome.vue'
-import WebProjects from '../components/WebProjects.vue'
+import ModuleInfo from '../components/ModuleInfo.vue'
+import ServicProject from '../components/ServicProject.vue'
 Vue.use(VueRouter)
 
 const routes = [
@@ -15,7 +16,8 @@ const routes = [
     redirect: '/welcome',
     children: [
       { path: '/welcome', component: Welcome },
-      { path: '/webprojects', component: WebProjects }
+      { path: '/moduleinfo', component: ModuleInfo },
+      { path: '/servicproject', component: ServicProject }
     ]
   }
 ]
