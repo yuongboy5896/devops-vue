@@ -108,8 +108,8 @@ export default {
             },
             {
               id: 111,
-              authName: "后端",
-              path: "servicproject",
+              authName: "环境管理",
+              path: "deployenv",
               children: [],
               order: null,
             }
