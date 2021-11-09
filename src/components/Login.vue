@@ -150,7 +150,7 @@ export default {
       this.$refs.loginFormRef.validate(async valid => {
         if (!valid) return
         const { data: res } = await this.$http.post('/api/login_pwd', this.loginForm)
-        if (res.code !== 0) return this.$message.error('登录失败！')
+        if (res.code !== 200) return this.$message.error('登录失败！')
         this.$message.success('登录成功')
         // 1. 将登录成功之后的 token，保存到客户端的 sessionStorage 中
         //   1.1 项目中出了登录之外的其他API接口，必须在登录之后才能访问
@@ -163,7 +163,7 @@ export default {
     // 获取验证码
     async getVertifycha() {
       const{ data:res } =  await this.$http.get('/api/captcha')
-      if (res.code !== 0) {
+      if (res.code !== 200) {
         return this.$message.error("获取验证码识别失败！");
       }
       //console.log(res);

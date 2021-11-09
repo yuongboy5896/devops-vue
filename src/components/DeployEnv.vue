@@ -46,14 +46,14 @@
               type="primary"
               size="mini"
               icon="el-icon-edit"
-              @click="showEditDialog(scope.row.EnvIP)"
+              @click="showEditDialog(scope.row.Id)"
             ></el-button>
             <!--删除按钮-->
             <el-button
               type="danger"
               size="mini"
               icon="el-icon-delete"
-              @click="removeUserById(scope.row.EnvIP)"
+              @click="removeUserById(scope.row.Id)"
             ></el-button>
             <!--分配角色按钮-->
             <el-tooltip
@@ -139,6 +139,9 @@
         <el-form-item label="环境名称" prop="EnvName">
           <el-input v-model="editForm.EnvName"></el-input>
         </el-form-item>
+         <el-form-item label="环境编号" prop="EnvCode">
+          <el-input v-model="editForm.EnvCode"></el-input>
+        </el-form-item>
         <el-form-item label="环境IP" prop="EnvIP">
           <el-input v-model="editForm.EnvIP"></el-input>
         </el-form-item>
@@ -205,6 +208,7 @@ export default {
       AddForm: {
         EnvIP: "",
         EnvName: "",
+        EnvCode: "",
         EnvType: "",
         //连接方式 api ssh
         EnvConn: "",
@@ -212,6 +216,15 @@ export default {
       },
       AddFormRules: {
         EnvName: [
+          { required: true, message: "请输入环境名称", trigger: "blur" },
+          {
+            min: 3,
+            max: 50,
+            message: "长度在 3 到 50 个字符",
+            trigger: "blur",
+          },
+        ],
+        EnvCode: [
           { required: true, message: "请输入环境名称", trigger: "blur" },
           {
             min: 3,
@@ -239,13 +252,25 @@ export default {
         ],
       },
       editForm: {
-        username: "",
-        password: "",
-        email: "",
-        mobile: "",
+        EnvIP: "",
+        EnvName: "",
+        EnvCode: "",
+        EnvType: "",
+        //连接方式 api ssh
+        EnvConn: "",
+        EnvConnPort: "",
       },
       editFormRules: {
        EnvName: [
+          { required: true, message: "请输入环境名称", trigger: "blur" },
+          {
+            min: 3,
+            max: 50,
+            message: "长度在 3 到 50 个字符",
+            trigger: "blur",
+          },
+        ],
+         EnvCode: [
           { required: true, message: "请输入环境名称", trigger: "blur" },
           {
             min: 3,
@@ -275,6 +300,7 @@ export default {
       //
       editDialogClose() {
         this.$refs.editFormRef.resetFields();
+        this.getdepEnvList();
       },
       //
     };
@@ -288,7 +314,7 @@ export default {
         //params: this.queryInfo,
       //}
       );
-      if (res.code !== 0) return this.$message.error("获取环境列表失败！");
+      if (res.code !== 200) return this.$message.error("获取环境列表失败！");
       console.log(res);
       this.depEnvList = res.data;
       this.total = res.data.total;
@@ -311,7 +337,7 @@ export default {
         console.log(valid);
         if (!valid) return;
         const { data: res } = await this.$http.post("/api/addde", this.AddForm);
-        if (res.code !== 0) {
+        if (res.code !== 200) {
           this.$message.error("添加环境失败！");
         }
         this.$message.success("添加环境成功！");
@@ -321,10 +347,10 @@ export default {
         this.getdepEnvList();
       });
     },
-    async showEditDialog(ip) {
-      const { data: res } = await this.$http.get("/api/getde/" + ip);
+    async showEditDialog(Id) {
+      const { data: res } = await this.$http.get("/api/getde/" + Id);
 
-      if (res.code !== 0) {
+      if (res.code !== 200) {
         return this.$message.error("查询环境数据失败！");
       }
       this.editForm = res.data;
@@ -335,13 +361,19 @@ export default {
         console.log(valid);
         if (!valid) return;
         const { data: res } = await this.$http.put(
-          "/api/updatede" + this.editForm.id,
+          "/api/updatede/" + this.editForm.Id,
           {
-            email: this.editForm.email,
-            mobile: this.editForm.mobile,
+            Id: this.editForm.Id,  
+            EnvName: this.editForm.EnvName,
+            EnvIP: this.editForm.EnvIP,
+            EnvType: this.editForm.EnvType,
+            EnvConn: this.editForm.EnvConn,
+            EnvCode: this.editForm.EnvCode,
+            EnvConnPort: this.editForm.EnvConnPort,
+            Desc: this.editForm.Desc,
           }
         );
-        if (res.meta.status !== 200) {
+        if (res.code !== 200) {
           this.$message.error("更新环境信息失败！");
         }
       });
@@ -369,8 +401,8 @@ export default {
       if (confirmResult !== "confirm") {
         return this.$message.info("已经取消删除");
       }
-      const { data: res } = await this.$http.delete("/users/" + Id);
-      if (res.meta.status !== 200) {
+      const { data: res } = await this.$http.delete("/api/deletede/" + Id);
+      if (res.code !== 200) {
         return this.$message.error("删除环境数据失败！");
       }
       this.$message.success("删除环境数据成功！");

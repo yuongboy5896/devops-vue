@@ -31,9 +31,20 @@
           >
         </el-col>
       </el-row>
-
+           
       <!-- 模块列表区域 -->
       <el-table :data="moduleInfolist" border stripe>
+        <!-- 展开列 -->
+        <el-table-column type="expand">
+           <template slot-scope="scope">
+              {{scope.row}}
+              <el-table :data="moduleInfolist" border stripe>
+                <el-table-column type="index"></el-table-column>
+                <el-table-column label="模块名称" prop="ModuleName"></el-table-column>
+                <el-table-column label="模块编码" prop="ModuleCode"></el-table-column>
+               </el-table>
+            </template> 
+        </el-table-column>   
         <el-table-column type="index"></el-table-column>
         <el-table-column label="模块名称" prop="ModuleName"></el-table-column>
         <el-table-column label="模块编码" prop="ModuleCode"></el-table-column>
@@ -50,15 +61,29 @@
               type="primary"
               size="mini"
               icon="el-icon-edit"
-              @click="showEditDialog(scope.row.ModuleCode)"
+              @click="showEditDialog(scope.row.Id)"
             ></el-button>
             <!--删除按钮-->
             <el-button
               type="danger"
               size="mini"
               icon="el-icon-delete"
-              @click="removeModuleInfoById(scope.row.ModuleCode)"
+              @click="removeModuleInfoById(scope.row.Id)"
             ></el-button>
+            <!--列表部署模块情况-->
+            <el-tooltip
+              effect="dark"
+              content="列表部署模块情况"
+              placement="top"
+              :enterable="false"
+            >
+              <el-button
+                type="warning"
+                icon="el-icon-setting"
+                size="mini"
+                @click="addPipelineDialog(scope.row)"
+              ></el-button>
+            </el-tooltip>
           </template>
         </el-table-column>
       </el-table>
@@ -102,9 +127,6 @@
         <el-form-item label="项目列表">
           <el-input v-model="addForm.ProjectType"></el-input>
         </el-form-item>
-        <el-form-item label="GitLab">
-          <el-input v-model="addForm.GitlabUrl"></el-input>
-        </el-form-item>
       </el-form>
       <!-- 底部区域 -->
       <span slot="footer" class="dialog-footer">
@@ -138,13 +160,74 @@
         <el-form-item label="项目列表">
           <el-input v-model="editForm.ProjectType"></el-input>
         </el-form-item>
-        <el-form-item label="GitLab">
-          <el-input v-model="editForm.GitlabUrl"></el-input>
+        <el-form-item label="GitLab" >
+          <el-input v-model="editForm.GitlabUrl" ></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="editDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="editUserInfo">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!-- 树型部署模块对话框 -->
+    <el-dialog
+      title="添加部署流程"
+      :visible.sync="addPipeLineDialogVisible"
+      :rules="addPipeLineFormRules"
+    
+      width="50%"
+      @close="setPipeLineDialogClosed"
+    >
+      <el-form
+        :model="addPipeLineForm"
+        :rules="addPipeLineFormRules"
+        ref="editPipeLineFormRef"
+        label-width="70px"
+      >
+        <div>
+          <el-form-item label="发布流程名称" prop="ModuleName">
+            <el-input v-model="addPipeLineForm.Pipename"></el-input>
+          </el-form-item>
+          <el-form-item label="发布流程code" prop="ModuleName">
+            <el-input v-model="addPipeLineForm.PipeCode"></el-input>
+          </el-form-item>
+          <el-form-item label="模块的名字" prop="ModuleName">
+            <el-input v-model="addPipeLineForm.Department" disabled ></el-input>
+          </el-form-item>
+          <el-form-item label="部署环境" prop="ModuleCode">
+            <el-select v-model="selectedDeployEnvItem" placeholder="请选择">
+              <el-option
+                v-for="item in deployEnvList"
+                :key="item.Id"
+                :label="item.EnvName"
+                :value="item"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="命名空间" prop="ModuleCode">
+            <el-input v-model="addPipeLineForm.NameSpace"></el-input>
+          </el-form-item>
+          <el-form-item label="模块的分支" prop="ModuleCode">
+            <el-select v-model="addPipeLineForm.Branch" placeholder="请选择">
+              <el-option
+                v-for="item in branchList"
+                :key="item.name"
+                :label="item.name"
+                :value="item.name"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+           <el-form-item label="模块的url" prop="ModuleCode">
+            <el-input v-model="addPipeLineForm.SshUrlToRepo" disabled></el-input>
+          </el-form-item>
+        </div>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="addPipeLineDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="savePipeLineInfo">确 定</el-button>
+        <el-button type="primary" @click="setPipeLineInfo">生产信息</el-button>
       </span>
     </el-dialog>
   </div>
@@ -201,9 +284,23 @@ export default {
         pagesize: 2,
       },
       moduleInfolist: [],
+      // 所有环境的数据
+      rightslist: [],
+      // 分支数据
+      branchList: [],
+      // 分支环境列表
+      deployEnvList: [],
+      // 已选中的角色分支name api 只提供名字
+      selectedBranchId: "",
+      // 已选中的环境ID
+      selectedDeployEnvItem: "",
+      // 已选中的信息命名空间
+      selectedNameSpaceId: "",
       total: 0,
       // 控制添加模块对话框的显示与隐藏
       addDialogVisible: false,
+      // PipeLine添加模块对话框的显示与隐藏
+      addPipeLineDialogVisible: false,
       // 添加模块的表单数据
       addForm: {
         ModuleCode: "thpower-operation",
@@ -211,6 +308,21 @@ export default {
         TechnologyType: "java",
         ProjectType: "微服务",
         GitlabUrl: "http://192.168.48.15:8080/microservice/operation",
+      },
+      // addForm
+      addPipeLineForm: {
+        Pipename: "",
+        PipeCode: "",
+        TechnologyType: "",
+        EnvName: "",
+        SshUrlToRepo: "",
+        Branch: "",
+        GitlabId: "",
+        ModuleName: "",
+        ModuleCode: "",
+        Department: "",
+        ShowUrl: "",
+        ModuleName:"" //临时存储模块信息
       },
       // 添加表单的验证规则对象
       addFormRules: {
@@ -248,6 +360,18 @@ export default {
           },
         ],
       },
+      addPipeLineFormRules: {
+        Pipename: [
+          { required: true, message: "请输入模块code", trigger: "blur" },
+          {
+            min: 3,
+            max: 50,
+            message: "模块名的长度在3~50个字符之间",
+            trigger: "blur",
+          },
+        ],
+      },
+
       // 控制修改模块对话框的显示与隐藏
       editDialogVisible: false,
       // 查询到的模块信息对象
@@ -263,13 +387,25 @@ export default {
           { validator: checkMobile, trigger: "blur" },
         ],
       },
+       // 修改表单的验证规则对象
+      editPipeLineFormRules: {
+        email: [
+          { required: true, message: "请输入模块邮箱", trigger: "blur" },
+          { validator: checkEmail, trigger: "blur" },
+        ],
+        mobile: [
+          { required: true, message: "请输入模块手机", trigger: "blur" },
+          { validator: checkMobile, trigger: "blur" },
+        ],
+      },
       // 控制分配角色对话框的显示与隐藏
-      setRoleDialogVisible: false,
+      setModuleDialogVisible: false,
       // 需要被分配角色的模块信息
       userInfo: {},
     };
   },
   created() {
+    debugger
     this.getModuleInfoList();
   },
   methods: {
@@ -278,7 +414,7 @@ export default {
         params: this.queryInfo,
       });
       console.log(res);
-      if (res.code !== 0) {
+      if (res.code !== 200) {
         return this.$message.error("获取模块列表失败！");
       }
       this.moduleInfolist = res.data;
@@ -320,7 +456,7 @@ export default {
         // 可以发起添加模块的网络请求
         const { data: res } = await this.$http.post("/api/addmi", this.addForm);
         console.log(res);
-        if (res.code !== 0) {
+        if (res.code !== 200) {
           this.$message.error("添加模块失败！");
           return;
         }
@@ -361,11 +497,11 @@ export default {
             ModuleName: this.editForm.ModuleName,
             TechnologyType: this.editForm.TechnologyType,
             ProjectType: this.editForm.ProjectType,
-            GitlabUrl: this.editForm.GitlabUrl
+            GitlabUrl: this.editForm.GitlabUrl,
           }
         );
 
-        if (res.code !== 0) {
+        if (res.code !== 200) {
           return this.$message.error("更新模块信息失败！");
         }
 
@@ -398,17 +534,133 @@ export default {
       }
       console.log(Id);
       const { data: res } = await this.$http.delete("/api/deletemi/" + Id);
-      if (res.code !== 0) {
+      if (res.code !== 200) {
         return this.$message.error("删除模块信息失败！");
       }
 
       this.$message.success("删除模块成功！");
       this.getModuleInfoList();
     },
+    // 展示分配权限的对话框
+    async showSetRightDialog(role) {
+      this.roleId = role.id;
+      // 获取所有权限的数据
+      const { data: res } = await this.$http.get("rights/tree");
+
+      if (res.meta.status !== 200) {
+        return this.$message.error("获取权限数据失败！");
+      }
+
+      // 把获取到的权限数据保存到 data 中
+      this.rightslist = res.data;
+      console.log(this.rightslist);
+
+      // 递归获取三级节点的Id
+      this.getLeafKeys(role, this.defKeys);
+
+      this.setRightDialogVisible = true;
+    },
+    // 通过递归的形式，获取角色下所有三级权限的id，并保存到 defKeys 数组中
+    getLeafKeys(node, arr) {
+      // 如果当前 node 节点不包含 children 属性，则是三级节点
+      if (!node.children) {
+        return arr.push(node.id);
+      }
+
+      node.children.forEach((item) => this.getLeafKeys(item, arr));
+    },
+    // 监听分配权限对话框的关闭事件
+    setRightDialogClosed() {
+      this.defKeys = [];
+    },
+    // 添加流水线部署
+    async addPipelineDialog(ModuleInfo) {
+      const { data: res } = await this.$http.get(
+        "/api/getgrlist/" + ModuleInfo.GitlabId
+      );
+
+      if (res.code !== 200) {
+        return this.$message.error("获取Gitlab数据失败！");
+      }
+
+      // 把获取到的权限数据保存到 data 中
+      this.branchList = res.data;
+      console.log(this.branchList);
+      this.addPipeLineForm.GitlabId = ModuleInfo.GitlabId;
+      this.addPipeLineForm.SshUrlToRepo = ModuleInfo.SshUrlToRepo;
+      this.addPipeLineForm.Department = ModuleInfo.ModuleCode;
+      this.addPipeLineForm.ModuleName = ModuleInfo.ModuleName;
+      this.addPipeLineForm.ModuleCode = ModuleInfo.ModuleCode;
+      this.addPipeLineForm.TechnologyType = ModuleInfo.TechnologyType;
+
+
+      // 获取环境列表
+      const { data: resde } = await this.$http.get("/api/getdelist");
+      if (resde.code !== 200) {
+        return this.$message.error("获取环境列表数据失败！");
+      }
+
+      // 把获取到的环境列表保存到 data 中
+      this.deployEnvList = resde.data;
+      console.log(this.deployEnvList);
+      this.addPipeLineDialogVisible = true;
+    },
+    //
+    setPipeLineDialogClosed() {
+      this.$refs.addPipeLineFormRules.resetFields();
+    },
+    // 保存部署流程
+    async savePipeLineInfo() {
+      if (!this.addPipeLineForm.Branch) {
+        return this.$message.error("请选择分支！");
+      }
+      if (!this.selectedDeployEnvItem) {
+        return this.$message.error("请选择环境信息！");
+      }
+      debugger
+      this.$refs.editPipeLineFormRef.validate(async (valid) => {
+        if (!valid) return;
+        // 可以发起添加模块的网络请求
+        console.log(this.addPipeLineForm)
+        debugger
+        this.addPipeLineForm.EnvName =  this.selectedDeployEnvItem.EnvName
+        //this.addPipeLineForm.EnvName =  this.selectedDeployEnvItem.EnvName
+        const { data: res } = await this.$http.post("/api/addpl", this.addPipeLineForm);
+        console.log(res);
+        if (res.code !== 200) {
+          this.$message.error("添加模块失败！");
+          return;
+        }
+
+        this.$message.success("添加模块成功！");
+        // 隐藏添加模块的对话框
+        this.addPipeLineDialogVisible = false;
+        // 重新获取模块列表数据
+        this.getModuleInfoList();
+      });
+    },
+    // 生产部署流程信息，部署名称、部署编号
+    setPipeLineInfo() {
+     // if (!this.selectedBranchId) {
+      //  return this.$message.error("请选择分支！");
+    //  }
+      if (!this.selectedDeployEnvItem) {
+        return this.$message.error("请选择环境信息！");
+      }
+      //if (!this.selectedNameSpaceId) {
+      //  return this.$message.error("请选择环境信息命名空间！");
+     // }
+      console.log(this.selectedDeployEnvItem)
+      this.addPipeLineForm.PipeCode = this.selectedDeployEnvItem.EnvCode + "-" +  this.addPipeLineForm.Department;
+      this.addPipeLineForm.Pipename = this.selectedDeployEnvItem.EnvName + "-" +  this.addPipeLineForm.ModuleName;
+    },
   },
 };
 </script>
 
 <style lang="less" scoped>
+.el-form-item {
+  width: 500px;
+}
 </style>
 
