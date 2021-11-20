@@ -1,0 +1,8 @@
+.chart-wrap{
+  position: absolute;
+  top: 15px;
+  bottom: 15px;
+  left: 250px;
+  right: 15px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}

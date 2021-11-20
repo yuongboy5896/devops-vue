@@ -405,7 +405,6 @@ export default {
     };
   },
   created() {
-    debugger
     this.getModuleInfoList();
   },
   methods: {

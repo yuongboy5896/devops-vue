@@ -5,6 +5,8 @@ import Login from '../components/Login.vue'
 import Welcome from '../components/Welcome.vue'
 import ModuleInfo from '../components/ModuleInfo.vue'
 import DeployEnv from '../components/DeployEnv.vue'
+import ModulePublish from '../components/ModulePublish.vue'
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -17,7 +19,8 @@ const routes = [
     children: [
       { path: '/welcome', component: Welcome },
       { path: '/moduleinfo', component: ModuleInfo },
-      { path: '/deployenv', component: DeployEnv }
+      { path: '/deployenv', component: DeployEnv },
+      { path: '/modulepublish', component: ModulePublish }
     ]
   }
 ]

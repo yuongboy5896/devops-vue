@@ -26,3 +26,194 @@ body,
   margin-top: 15px;
   font-size: 12px;
 }
+
+
+
+/**S:可复用树样式**/
+.hn_treebox{
+  width: 220px;
+  padding: 10px;
+  box-sizing: border-box;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  overflow: hidden;
+}
+.hn_tree.el-tree{
+  padding-top: 10px;
+  background-color: transparent;
+}
+.hn_tree_search .el-input__inner{
+  border: none;
+  border-radius: 0;
+  top: 15px;
+  left: 15px;
+  height:32px;line-height:32px;
+
+}
+.hn_tree_search .el-input-group__append{
+  border: none;
+  border-radius: 0;
+  padding: 0 10px;
+}
+.hn_tree_search .el-input-group__append .el-button{
+  padding: 8px;
+  margin: 0;
+}
+.hn_tree_search .el-input__icon{
+  line-height: 28px;
+}
+.hn_tree_wrap .el-radio-group{
+  padding: 10px 0;
+}
+.hn_tree_wrap{
+  height: calc(100% - 32px);
+  overflow-y: auto;
+}
+.hn_tree_wrap .el-tree-node>.el-tree-node__children{
+  overflow:visible;
+}
+
+/**E:可复用树样式**/
+
+/**公用按钮 开始***/
+/**S:无背景色按钮样式**/
+.hn_noborder_btn{
+  line-height: 12px;
+  padding: 8px 15px;
+  border: none;
+  height: 28px;
+  outline: none;
+}
+/**E:无背景色按钮样式**/
+
+/**S:复用有背影按钮样式**/
+.hn_bg_btn.el-button{
+  line-height: 28px;
+  padding:0 20px;
+  border: none;
+  height: 28px;
+  outline: none;
+  min-width: 74px;
+}
+.hn_bg_btn i,
+.hn_bg_btn span{
+  font-size: 12px;
+  margin-right: 3px;
+}
+.hn_bg_btn.el-button.is-disabled{
+    background-color: #FFF;
+    border:1px solid #EBEEF5;
+    color: #C0C4CC;
+}
+/**次要按钮样式**/
+.hn_secondary_btn.el-button {
+  line-height: 28px;
+  padding: 0 20px;
+  height: 28px;
+  min-width: 74px;
+}
+.hn_secondary_btn i,
+.hn_secondary_btn span{
+  font-size: 12px;
+  margin-right: 3px;
+}
+.hn_secondary_btn.el-button.is-disabled{
+    background-color: #FFF;
+    border:1px solid #EBEEF5;
+    color: #C0C4CC;
+}
+/**文本按钮样式*/
+.hn_text_btn.el-button{
+  color: #1989fa;
+}
+/**超链接样式*/
+.hn_text_a{
+  /* color: #1989fa; */
+  color:#1869FF;
+  font-weight:400;
+  cursor: pointer;
+}
+/**E:复用有背影按钮样式**/
+
+/**S 复用 无背景色按钮样式*/
+.hn_nobg_btn.el-button{
+  background: #FFFFFF;
+  border: 1px solid #DEE0E3;
+  border-radius: 4px;
+  height:32px;line-height:32px;
+  padding:0 20px;
+  font-size: 14px;
+  color: #181E28;
+}
+/**E 复用 无背景色按钮样式**/
+/**公用按钮 结束***/
+
+
+
+
+/**S:复用输入框样式**/
+.hn_input{
+  height: 28px!important;
+  line-height: 28px!important;
+  border: 1px;
+  border-style: solid;
+  border-radius: 0;
+  outline: none;
+  padding: 0 15px;
+}
+.hn_input .el-input__inner,
+.hn_input .el-input.is-disabled .el-input__inner{
+    height: 28px!important;
+    line-height: 28px!important;
+    border:0;
+    border-radius: 0;
+    outline: none;
+    padding:0;
+    background:transparent;
+    font-family: -apple-system, BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI", Roboto,"Helvetica Neue", Helvetica,  "Hiragino Sans GB",SimSun, sans-serif;
+}
+.hn_input.el-input.is-disabled .el-input__inner {
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.hn_input .el-input__icon{
+line-height: 28px;
+}
+
+.hn_textarea{
+  border: 1px;
+  border-style: solid;
+  border-radius: 0;
+  outline: none;
+  padding: 0;
+}
+.hn_textarea .el-textarea__inner{
+    border:0;
+    border-radius: 0;
+    outline: none;
+    padding:0 15px;
+    background:transparent;
+    font-family: -apple-system, BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI", Roboto,"Helvetica Neue", Helvetica,  "Hiragino Sans GB",SimSun, sans-serif;
+}
+
+.hn_input_number,
+.hn_input_number.el-input-number.is-controls-right .el-input__inner,
+.hn_input_number.el-input-number.is-controls-right .el-input-number__increase,
+.hn_input_number.el-input-number.is-controls-right .el-input-number__decrease,
+.hn_input_number .el-input.is-disabled .el-input__inner{
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.inputnumber{
+  width:100px;
+  height: 28px;
+  line-height: 28px;
+  border: 1px solid #D9D9D9;
+  border-style: solid;
+  border-radius: 0;
+  outline: none;
+  padding: 0 5px;
+}
+/**E:复用输入框样式**/

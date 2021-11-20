@@ -118,20 +118,20 @@ export default {
         },
         {
           id: 103,
-          authName: "环境管理",
+          authName: "发布管理",
           path: "rights",
           children: [
             {
               id: 111,
-              authName: "公用云",
-              path: "roles",
+              authName: "模块发布",
+              path: "modulepublish",
               children: [],
               order: null,
             },
             {
               id: 112,
-              authName: "私有云",
-              path: "rights",
+              authName: "环境发布",
+              path: "moduleinfo",
               children: [],
               order: null,
             }
