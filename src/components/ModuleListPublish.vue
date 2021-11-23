@@ -22,7 +22,7 @@
         </el-col>
         <el-col :span="4">
           <el-button type="primary" @click="addDialogVisible = true"
-            >添加模块</el-button
+            >添加发布</el-button
           >
         </el-col>
       </el-row>
