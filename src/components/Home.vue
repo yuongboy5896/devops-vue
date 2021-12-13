@@ -112,6 +112,13 @@ export default {
               path: "deployenv",
               children: [],
               order: null,
+            },
+            {
+              id: 113,
+              authName: "镜像仓库",
+              path: "images",
+              children: [],
+              order: null,
             }
           ],
           order: 1,
@@ -139,6 +146,7 @@ export default {
           ],
           order: 2,
         },
+        
       ];
     },
     // 点击按钮，切换菜单的折叠与展开

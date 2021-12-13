@@ -140,6 +140,7 @@
       title="修改模块"
       :visible.sync="editDialogVisible"
       width="50%"
+      :before-close="handleClose"
       @close="editDialogClosed"
     >
       <el-form
@@ -173,15 +174,14 @@
     <el-dialog
       title="添加部署流程"
       :visible.sync="addPipeLineDialogVisible"
-      :rules="addPipeLineFormRules"
-    
       width="50%"
+      :before-close="handleClose"
       @close="setPipeLineDialogClosed"
     >
       <el-form
         :model="addPipeLineForm"
         :rules="addPipeLineFormRules"
-        ref="editPipeLineFormRef"
+        ref="addPipeLineFormRef"
         label-width="70px"
       >
         <div>
@@ -192,7 +192,7 @@
             <el-input v-model="addPipeLineForm.PipeCode"></el-input>
           </el-form-item>
           <el-form-item label="模块的名字" prop="ModuleName">
-            <el-input v-model="addPipeLineForm.Department" disabled ></el-input>
+            <el-input v-model="addPipeLineForm.ModuleName" disabled ></el-input>
           </el-form-item>
           <el-form-item label="部署环境" prop="ModuleCode">
             <el-select v-model="selectedDeployEnvItem" placeholder="请选择">
@@ -200,7 +200,7 @@
                 v-for="item in deployEnvList"
                 :key="item.Id"
                 :label="item.EnvName"
-                :value="item"
+                :value="item.Id"
               >
               </el-option>
             </el-select>
@@ -446,6 +446,7 @@ export default {
     },
     // 监听添加模块对话框的关闭事件
     addDialogClosed() {
+      console.log( this.$refs);
       this.$refs.addFormRef.resetFields();
     },
     // 点击按钮，添加新模块
@@ -540,38 +541,7 @@ export default {
       this.$message.success("删除模块成功！");
       this.getModuleInfoList();
     },
-    // 展示分配权限的对话框
-    async showSetRightDialog(role) {
-      this.roleId = role.id;
-      // 获取所有权限的数据
-      const { data: res } = await this.$http.get("rights/tree");
-
-      if (res.meta.status !== 200) {
-        return this.$message.error("获取权限数据失败！");
-      }
-
-      // 把获取到的权限数据保存到 data 中
-      this.rightslist = res.data;
-      console.log(this.rightslist);
-
-      // 递归获取三级节点的Id
-      this.getLeafKeys(role, this.defKeys);
-
-      this.setRightDialogVisible = true;
-    },
-    // 通过递归的形式，获取角色下所有三级权限的id，并保存到 defKeys 数组中
-    getLeafKeys(node, arr) {
-      // 如果当前 node 节点不包含 children 属性，则是三级节点
-      if (!node.children) {
-        return arr.push(node.id);
-      }
-
-      node.children.forEach((item) => this.getLeafKeys(item, arr));
-    },
-    // 监听分配权限对话框的关闭事件
-    setRightDialogClosed() {
-      this.defKeys = [];
-    },
+    
     // 添加流水线部署
     async addPipelineDialog(ModuleInfo) {
       const { data: res } = await this.$http.get(
@@ -587,7 +557,6 @@ export default {
       console.log(this.branchList);
       this.addPipeLineForm.GitlabId = ModuleInfo.GitlabId;
       this.addPipeLineForm.SshUrlToRepo = ModuleInfo.SshUrlToRepo;
-      this.addPipeLineForm.Department = ModuleInfo.ModuleCode;
       this.addPipeLineForm.ModuleName = ModuleInfo.ModuleName;
       this.addPipeLineForm.ModuleCode = ModuleInfo.ModuleCode;
       this.addPipeLineForm.TechnologyType = ModuleInfo.TechnologyType;
@@ -606,7 +575,7 @@ export default {
     },
     //
     setPipeLineDialogClosed() {
-      this.$refs.addPipeLineFormRules.resetFields();
+      this.$refs.addPipeLineFormRef.resetFields();
     },
     // 保存部署流程
     async savePipeLineInfo() {
@@ -623,7 +592,7 @@ export default {
         console.log(this.addPipeLineForm)
         debugger
         this.addPipeLineForm.EnvName =  this.selectedDeployEnvItem.EnvName
-        //this.addPipeLineForm.EnvName =  this.selectedDeployEnvItem.EnvName
+        this.addPipeLineForm.EnvId =  this.selectedDeployEnvItem.Id;
         const { data: res } = await this.$http.post("/api/addpl", this.addPipeLineForm);
         console.log(res);
         if (res.code !== 200) {
@@ -650,8 +619,8 @@ export default {
       //  return this.$message.error("请选择环境信息命名空间！");
      // }
       console.log(this.selectedDeployEnvItem)
-      this.addPipeLineForm.PipeCode = this.selectedDeployEnvItem.EnvCode + "-" +  this.addPipeLineForm.Department;
-      this.addPipeLineForm.Pipename = this.selectedDeployEnvItem.EnvName + "-" +  this.addPipeLineForm.ModuleName;
+      this.addPipeLineForm.PipeCode = this.selectedDeployEnvItem.EnvCode + "-" +  this.addPipeLineForm.ModuleCode;
+      this.addPipeLineForm.PipeName = this.selectedDeployEnvItem.EnvName + "-" +  this.addPipeLineForm.ModuleName;
     },
   },
 };
