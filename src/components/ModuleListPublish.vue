@@ -570,7 +570,7 @@ export default {
         return this.$message.error("查询模块信息失败！");
       }
     },
-
+  
   },
 };
 </script>

@@ -32,14 +32,10 @@
       </el-row>
        
       <!-- 模块列表区域 -->
-      <el-table :data="moduleInfolist" border stripe>
+      <el-table :data="RepositoryList" border stripe>
         <el-table-column type="index"></el-table-column>
         <el-table-column label="仓库名称" prop="RegistryName"></el-table-column>
         <el-table-column label="仓库编码" prop="RegistryCode"></el-table-column>
-        <el-table-column
-          label="技术类型"
-          prop="TechnologyType"
-        ></el-table-column>
         <el-table-column label="仓库地址" prop="RegistryUrl"></el-table-column>
         <el-table-column label="内网地址" prop="RegistryLocalUrl"></el-table-column>
         <el-table-column label="操作">
@@ -56,12 +52,12 @@
               type="danger"
               size="mini"
               icon="el-icon-delete"
-              @click="removeModuleInfoById(scope.row.Id)"
+              @click="removeRegistryById(scope.row.Id)"
             ></el-button>
             <!--列表部署模块情况-->
             <el-tooltip
               effect="dark"
-              content="列表部署模块情况"
+              content="打开镜像仓库"
               placement="top"
               :enterable="false"
             >
@@ -102,10 +98,10 @@
         ref="addFormRef"
         label-width="70px"
       >
-        <el-form-item label="仓库名称" prop="ModuleName">
+        <el-form-item label="仓库名称" >
           <el-input v-model="addForm.RegistryName"></el-input>
         </el-form-item>
-        <el-form-item label="仓库编码" prop="ModuleCode">
+        <el-form-item label="仓库编码" >
           <el-input v-model="addForm.RegistryCode"></el-input>
         </el-form-item>
         <el-form-item label="登录名称">
@@ -114,10 +110,10 @@
         <el-form-item label="登录密码">
           <el-input v-model="addForm.Pasword"></el-input>
         </el-form-item>
-         <el-form-item label="仓库地址">
+         <el-form-item label="域名地址">
           <el-input v-model="addForm.RegistryUrl"></el-input>
         </el-form-item>
-        <el-form-item label="仓库地址">
+        <el-form-item label="内网地址">
           <el-input v-model="addForm.RegistryLocalUrl"></el-input>
         </el-form-item>
       </el-form>
@@ -125,6 +121,45 @@
       <span slot="footer" class="dialog-footer">
         <el-button @click="addDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="addRegistry">确 定</el-button>
+      </span>
+    </el-dialog>
+     <!-- 修改模块的对话框 -->
+    <el-dialog
+      title="修改仓库"
+      :visible.sync="editDialogVisible"
+      width="50%"
+      @close="editDialogClosed"
+    >
+      <!-- 内容主体区域 -->
+      <el-form
+        :model="editForm"
+        :rules="editFormRules"
+        ref="editFormRef"
+        label-width="70px"
+      >
+        <el-form-item label="仓库名称" >
+          <el-input v-model="editForm.RegistryName"></el-input>
+        </el-form-item>
+        <el-form-item label="仓库编码" >
+          <el-input v-model="editForm.RegistryCode"></el-input>
+        </el-form-item>
+        <el-form-item label="登录名称">
+          <el-input v-model="editForm.Login"></el-input>
+        </el-form-item>
+        <el-form-item label="登录密码">
+          <el-input v-model="editForm.Pasword"></el-input>
+        </el-form-item>
+         <el-form-item label="域名地址">
+          <el-input v-model="editForm.RegistryUrl"></el-input>
+        </el-form-item>
+        <el-form-item label="内网地址">
+          <el-input v-model="editForm.RegistryLocalUrl"></el-input>
+        </el-form-item>
+      </el-form>
+      <!-- 底部区域 -->
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editRepository">确 定</el-button>
       </span>
     </el-dialog>
     </div>
@@ -150,8 +185,19 @@ export default {
       RepositoryList: [],
        // 控制添加模块对话框的显示与隐藏
       addDialogVisible: false,
+       // 控制修改模块对话框的显示与隐藏
+      editDialogVisible: false,
        // 添加模块的表单数据
       addForm: {
+        RegistryName: "",
+        RegistryCode: "",
+        Login: "",
+        Pasword: "",
+        RegistryUrl: "",
+        RegistryLocalUrl: "",
+      },
+       // 修改模块的表单数据
+      editForm: {
         RegistryName: "",
         RegistryCode: "",
         Login: "",
@@ -193,6 +239,30 @@ export default {
     this.getRepositoryList();
   },
   methods: {
+    // 监听 pagesize 改变的事件
+    handleSizeChange(newSize) {
+      // console.log(newSize)
+      this.queryInfo.pagesize = newSize;
+      this.getRepositoryList();
+    },
+    // 监听 页码值 改变的事件
+    handleCurrentChange(newPage) {
+      console.log(newPage);
+      this.queryInfo.pagenum = newPage;
+      this.getRepositoryList();
+    },
+    // 监听 switch 开关状态的改变
+    async userStateChanged(userinfo) {
+      console.log(userinfo);
+      const { data: res } = await this.$http.put(
+        `users/${userinfo.id}/state/${userinfo.mg_state}`
+      );
+      if (res.meta.status !== 200) {
+        userinfo.mg_state = !userinfo.mg_state;
+        return this.$message.error("更新模块状态失败！");
+      }
+      this.$message.success("更新模块状态成功！");
+    },
     async getRepositoryList() {
       const { data: res } = await this.$http.get("/api/getirlist", {
         params: this.queryInfo,
@@ -222,6 +292,81 @@ export default {
         this.addDialogVisible = false;
         // 重新获取模块列表数据
         this.getRepositoryList();
+      });
+    },
+    // 
+     // 根据Id删除对应的
+    async removeRegistryById(Id) {
+      // 弹框询问模块是否删除数据
+      const confirmResult = await this.$confirm(
+        "此操作将永久删除该模块, 是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      ).catch((err) => err);
+
+      // 如果模块确认删除，则返回值为字符串 confirm
+      // 如果模块取消了删除，则返回值为字符串 cancel
+      // console.log(confirmResult)
+      if (confirmResult !== "confirm") {
+        return this.$message.info("已取消删除");
+      }
+      console.log(Id);
+      const { data: res } = await this.$http.delete("/api/deleteirr/" + Id);
+      if (res.code !== 200) {
+        return this.$message.error("删除模块信息失败！");
+      }
+
+      this.$message.success("删除模块成功！");
+      this.getRepositoryList();
+    },
+    // 展示编辑模块的对话框
+    async showEditDialog(id) {
+      // console.log(id)
+      const { data: res } = await this.$http.get("/api/getdirbyid/" + id);
+
+      if (res.code == 1) {
+        return this.$message.error("查询模块信息失败！");
+      }
+
+      this.editForm = res.data;
+      this.editDialogVisible = true;
+    },
+    // 监听修改模块对话框的关闭事件
+    editDialogClosed() {
+      this.$refs.editFormRef.resetFields();
+    },
+    // 修改信息并提交
+    editRepository() {
+      this.$refs.editFormRef.validate(async (valid) => {
+        if (!valid) return;
+        // 发起修改模块信息的数据请求
+        const { data: res } = await this.$http.put(
+          "/api/updateir/" + this.editForm.Id,
+          {
+            Id: this.editForm.Id,
+            RegistryName: this.editForm.RegistryName,
+            RegistryCode: this.editForm.RegistryCode,
+            Login: this.editForm.Login,
+            Pasword: this.editForm.Pasword,
+            RegistryUrl: this.editForm.RegistryUrl,
+            RegistryLocalUrl: this.editForm.RegistryLocalUrl,
+          }
+        );
+
+        if (res.code !== 200) {
+          return this.$message.error("更新模块信息失败！");
+        }
+
+        // 关闭对话框
+        this.editDialogVisible = false;
+        // 刷新数据列表
+        this.getModuleInfoList();
+        // 提示修改成功
+        this.$message.success("更新模块信息成功！");
       });
     },
   },

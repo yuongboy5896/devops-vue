@@ -127,6 +127,9 @@
         <el-form-item label="项目列表">
           <el-input v-model="addForm.ProjectType"></el-input>
         </el-form-item>
+        <el-form-item label="Gitlab">
+          <el-input v-model="addForm.GitlabUrl"></el-input>
+        </el-form-item>
       </el-form>
       <!-- 底部区域 -->
       <span slot="footer" class="dialog-footer">
