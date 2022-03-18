@@ -1,6 +1,6 @@
 <template>
-  <div  style="height: 90%;">
-      <div class="menu" style="height: 90%;">
+  <div  style="height: 100%;">
+      <div class="menu" >
         <el-tree
           :data="moduleInfolist"
           :props="defaultProps"
@@ -62,11 +62,15 @@ export default {
 .pagecontent {
     padding: 16px;
     height: 100%;
-    width: 100%;
     overflow: auto;
+    
 }
 .ptwopanel {
     padding: 16px 50px 0 20px;
+    height: 100%;
+    display: flex;
+    float: left;
+    width: calc(100% - 250px);;
 }
 .chart-wrap {
     position: absolute;
@@ -80,6 +84,7 @@ export default {
   width: 250px;
   padding: 10px;
   box-sizing: border-box;
+  float: left;
 
 }
 .orgtree {
