@@ -112,11 +112,18 @@ export default {
               path: "deployenv",
               children: [],
               order: null,
-            },
+            }, 
             {
               id: 113,
               authName: "镜像仓库",
               path: "images",
+              children: [],
+              order: null,
+            },
+            {
+              id: 114,
+              authName: "打包模版",
+              path: "JobTemplate",
               children: [],
               order: null,
             }
