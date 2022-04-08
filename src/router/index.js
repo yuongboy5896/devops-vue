@@ -7,7 +7,8 @@ import ModuleInfo from '../components/ModuleInfo.vue'
 import DeployEnv from '../components/DeployEnv.vue'
 import ModulePublish from '../components/ModulePublish.vue'
 import Images from '../components/Images.vue'
-import JobTemplate    from  '../components/JobTemplate.vue'
+import JobTemplate from '../components/JobTemplate.vue'
+import Vmware from '../components/vwm.vue'
 
 Vue.use(VueRouter)
 
@@ -24,7 +25,8 @@ const routes = [
       { path: '/deployenv', component: DeployEnv },
       { path: '/modulepublish', component: ModulePublish },
       { path: '/images', component: Images },
-      { path: '/JobTemplate', component: JobTemplate }
+      { path: '/JobTemplate', component: JobTemplate },
+      { path: '/vwm', component: Vmware }
     ]
   }
 ]

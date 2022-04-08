@@ -153,7 +153,29 @@ export default {
           ],
           order: 2,
         },
-        
+        {
+          id: 101,
+          authName: "基础资源",
+          path: "iaas",
+          children: [
+            {
+              id: 111,
+              authName: "虚拟机列表",
+              path: "vwm",
+              children: [],
+              order: null,
+            },
+            {
+              id: 112,
+              authName: "环境发布",
+              path: "moduleinfo",
+              children: [],
+              order: null,
+            }
+            
+          ],
+          order: 2,
+        },
       ];
     },
     // 点击按钮，切换菜单的折叠与展开
