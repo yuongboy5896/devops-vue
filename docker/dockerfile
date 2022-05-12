@@ -1,0 +1,2 @@
+FROM harbor.thpyun.com/common/openresty:latest
+ADD dist /usr/share/nginx/html
