@@ -1,20 +1,21 @@
 <template>
-  <div  style="height: 100%;">
-      <div class="menu" >
-        <el-tree
-          :data="moduleInfolist"
-          :props="defaultProps"
-          @node-click="handleNodeClick"
-        ></el-tree>
-      </div>
-      <div class="ptwopanel" >
-        <Modulelistpublish ref="portalInfo" :dictValue="dictValue" > </Modulelistpublish>
-      </div>
+  <div class="pageWrap">
+    <div class="menu">
+      <el-tree
+        :data="moduleInfolist"
+        :props="defaultProps"
+        @node-click="handleNodeClick"
+      ></el-tree>
+    </div>
+    <div class="ptwopanel">
+      <Modulelistpublish ref="portalInfo" :dictValue="dictValue">
+      </Modulelistpublish>
+    </div>
   </div>
 </template>
 
 <script>
-import Modulelistpublish from './ModuleListPublish.vue'
+import Modulelistpublish from "./ModuleListPublish.vue";
 export default {
   data() {
     return {
@@ -23,7 +24,7 @@ export default {
         children: "children",
         label: "ModuleName",
       },
-      dictValue:''
+      dictValue: "",
     };
   },
   created() {
@@ -33,7 +34,7 @@ export default {
     handleNodeClick(data) {
       console.log(data);
       // this.dictValue = data.GitlabUrl;
-      this.dictValue = data ;
+      this.dictValue = data;
     },
     async getModuleInfoList() {
       const { data: res } = await this.$http.get("/api/getmilist", {
@@ -48,44 +49,47 @@ export default {
       console.log(res);
     },
   },
-   components:{
-        Modulelistpublish
-    }
+  components: {
+    Modulelistpublish,
+  },
 };
 </script>
 
 
 <style  scoped>
 .el-tree {
-   height: 100%;
+  height: 100%;
 }
 .pagecontent {
-    padding: 16px;
-    height: 100%;
-    overflow: auto;
-    
+  padding: 16px;
+  height: 100%;
+  overflow: auto;
 }
 .ptwopanel {
-    padding: 16px 50px 0 20px;
-    height: 100%;
-    display: flex;
-    float: left;
-    width: calc(100% - 250px);;
+  padding: 16px 50px 0 20px;
+  height: 100%;
+  flex: 1;
+  /* display: flex; */
+  float: left;
+  /* width: calc(100% - 250px);; */
 }
 .chart-wrap {
-    position: absolute;
-   
-    bottom: 15px;
-    left: 250px;
-    right: 15px;
-    box-shadow: 0 0 5px rgba(0,0,0,.1);
+  position: absolute;
+
+  bottom: 15px;
+  left: 250px;
+  right: 15px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+.pageWrap {
+  height: 100%;
+  display: flex;
 }
 .menu {
   width: 250px;
   padding: 10px;
   box-sizing: border-box;
   float: left;
-
 }
 .orgtree {
   width: 220px;
