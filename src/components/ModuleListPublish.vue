@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <h3>{{ dictValue.GitlabUrl }}</h3>
+  <div style="height:100%;">
+    <h3 v-if="dictValue.GitlabUrl">{{ dictValue.GitlabUrl }}</h3>
     <!-- 卡片视图区域 -->
     <el-card>
       <!-- 搜索与添加区域 -->
