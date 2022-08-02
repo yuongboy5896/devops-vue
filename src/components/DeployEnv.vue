@@ -114,6 +114,18 @@
         <el-form-item label="连接方式">
           <el-input v-model="AddForm.EnvConn"></el-input>
         </el-form-item>
+        <el-form-item label="是否公有云">
+          <el-tooltip v-model="AddForm.EnvCommCloud">
+            <el-switch
+              v-model="editForm.EnvCommCloud"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              active-value="1"
+              inactive-value="0"
+            >
+            </el-switch>
+          </el-tooltip>
+        </el-form-item>
       </el-form>
       <!-- 底部区域 -->
       <span slot="footer" class="dialog-footer">
@@ -139,7 +151,7 @@
         <el-form-item label="环境名称" prop="EnvName">
           <el-input v-model="editForm.EnvName"></el-input>
         </el-form-item>
-         <el-form-item label="环境编号" prop="EnvCode">
+        <el-form-item label="环境编号" prop="EnvCode">
           <el-input v-model="editForm.EnvCode"></el-input>
         </el-form-item>
         <el-form-item label="环境IP" prop="EnvIP">
@@ -153,6 +165,19 @@
         </el-form-item>
         <el-form-item label="连接方式">
           <el-input v-model="editForm.EnvConn"></el-input>
+        </el-form-item>
+        <el-form-item label="是否公有云">
+          <el-input v-model="editForm.EnvCommCloud"></el-input>
+          <el-tooltip v-model="editForm.EnvCommCloud">
+            <el-switch
+              v-model="editForm.EnvCommCloud"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              active-value="1"
+              inactive-value="0"
+            >
+            </el-switch>
+          </el-tooltip>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -213,6 +238,7 @@ export default {
         //连接方式 api ssh
         EnvConn: "",
         EnvConnPort: "",
+        EnvCommCloud: false,
       },
       AddFormRules: {
         EnvName: [
@@ -259,9 +285,10 @@ export default {
         //连接方式 api ssh
         EnvConn: "",
         EnvConnPort: "",
+        EnvCommCloud: false,
       },
       editFormRules: {
-       EnvName: [
+        EnvName: [
           { required: true, message: "请输入环境名称", trigger: "blur" },
           {
             min: 3,
@@ -270,7 +297,7 @@ export default {
             trigger: "blur",
           },
         ],
-         EnvCode: [
+        EnvCode: [
           { required: true, message: "请输入环境名称", trigger: "blur" },
           {
             min: 3,
@@ -310,9 +337,10 @@ export default {
   },
   methods: {
     async getdepEnvList() {
-      const { data: res } = await this.$http.get("/api/getdelist", //{
+      const { data: res } = await this.$http.get(
+        "/api/getdelist" //{
         //params: this.queryInfo,
-      //}
+        //}
       );
       if (res.code !== 200) return this.$message.error("获取环境列表失败！");
       console.log(res);
@@ -363,7 +391,7 @@ export default {
         const { data: res } = await this.$http.put(
           "/api/updatede/" + this.editForm.Id,
           {
-            Id: this.editForm.Id,  
+            Id: this.editForm.Id,
             EnvName: this.editForm.EnvName,
             EnvIP: this.editForm.EnvIP,
             EnvType: this.editForm.EnvType,

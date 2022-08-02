@@ -239,7 +239,8 @@ export default {
         ModuleCode: "",
         Department: "",
         ShowUrl: "",
-        ModuleName:"" //临时存储模块信息
+        ModuleName:"", //临时存储模块信息
+        EnvCommCloud: 0 //是否共有云
       },
       // 验证
       addPipeLineFormRules: {
@@ -268,7 +269,8 @@ export default {
         Department: "",
         ShowUrl: "",
         NameSpace: "",
-        EnvId: -1
+        EnvId: -1,
+        EnvCommCloud: 0 //是否共有云
       },
        // 修改表单的验证规则对象
       editPipeLineFormRules: {
@@ -395,6 +397,7 @@ export default {
      
         this.addPipeLineForm.EnvName = EnvItem.EnvName;
         this.addPipeLineForm.EnvId =  EnvItem.Id;
+        this.addPipeLineForm.EnvCommCloud =  EnvItem.EnvCommCloud;
         const { data: res } = await this.$http.post("/api/addpl", this.addPipeLineForm);
         console.log(res);
         if (res.code !== 200) {
