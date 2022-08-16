@@ -102,6 +102,9 @@
         <el-form-item label="环境名称" prop="EnvName">
           <el-input v-model="AddForm.EnvName"></el-input>
         </el-form-item>
+        <el-form-item label="环境名称" prop="EnvCode">
+          <el-input v-model="AddForm.EnvCode"></el-input>
+        </el-form-item>
         <el-form-item label="环境IP" prop="EnvIP">
           <el-input v-model="AddForm.EnvIP"></el-input>
         </el-form-item>

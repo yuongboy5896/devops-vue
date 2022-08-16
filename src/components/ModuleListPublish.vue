@@ -236,6 +236,7 @@ export default {
         PipeCode: "",
         TechnologyType: "",
         EnvName: "",
+        EnvCode: "",
         SshUrlToRepo: "",
         Branch: "",
         GitlabId: "",
@@ -243,6 +244,7 @@ export default {
         ModuleCode: "",
         Department: "",
         ShowUrl: "",
+        NameSpace: "default",
         ModuleName: "", //临时存储模块信息
         EnvCommCloud: 0, //是否共有云
       },
@@ -319,7 +321,6 @@ export default {
           params: this.queryInfo,
         }
       );
-      console.log(res);
       if (res.code !== 200) {
         return this.$message.error("获取模块列表失败！");
       }
@@ -327,7 +328,6 @@ export default {
         this.pipeLineList = res.data;
 
         this.total = res.data.length;
-        console.log(res);
       }
     },
     // 添加流水线部署
@@ -355,7 +355,6 @@ export default {
       }
       // 把获取到的环境列表保存到 data 中
       this.deployEnvList = resde.data;
-      console.log(this.deployEnvList);
       this.addPipeLineDialogVisible = true;
     },
     //
@@ -376,9 +375,6 @@ export default {
         // 可以发起添加模块的网络请求
         var EnvItem;
         for (var i = 0; i < this.deployEnvList.length; i++) {
-          console.log(i);
-          console.log(this.deployEnvList[i].Id);
-          console.log(this.selectedDeployEnvItem);
           if (this.deployEnvList[i].Id === this.selectedDeployEnvItem) {
             EnvItem = this.deployEnvList[i];
           }
@@ -386,12 +382,13 @@ export default {
 
         this.addPipeLineForm.EnvName = EnvItem.EnvName;
         this.addPipeLineForm.EnvId = EnvItem.Id;
+        this.addPipeLineForm.EnvCode = EnvItem.EnvCode;
+        
         this.addPipeLineForm.EnvCommCloud = EnvItem.EnvCommCloud;
         const { data: res } = await this.$http.post(
           "/api/addpl",
           this.addPipeLineForm
         );
-        console.log(res);
         if (res.code !== 200) {
           this.$message.error("添加模块失败！");
           return;
@@ -425,11 +422,11 @@ export default {
       }
       this.editPipeLineForm.EnvName = EnvItem.EnvName;
       this.editPipeLineForm.EnvId = EnvItem.Id;
+      this.editPipeLineForm.EnvCode = EnvItem.EnvCode;
       const { data: res } = await this.$http.put(
         "/api/updatepl/" + this.editPipeLineForm.Id,
         this.editPipeLineForm
       );
-      console.log(res);
       if (res.code !== 200) {
         this.$message.error("添加模块失败！");
         return;
@@ -445,7 +442,6 @@ export default {
       if (!this.selectedDeployEnvItem) {
         return this.$message.error("请选择环境信息！");
       }
-      console.log(this.selectedDeployEnvItem);
       var EnvName;
       var EnvCode;
       for (var i = 0; i < this.deployEnvList.length; i++) {
@@ -497,7 +493,6 @@ export default {
       if (confirmResult !== "confirm") {
         return this.$message.info("已取消删除");
       }
-      console.log(Id);
       const { data: res } = await this.$http.delete("/api/deletepl/" + Id);
       if (res.code !== 200) {
         return this.$message.error("删除模块信息失败！");
@@ -539,7 +534,6 @@ export default {
     },
     // 发布按钮
     async setPipeLineByIdPublish(Id) {
-      console.log(Id);
       const { data: res } = await this.$http.put("/api/publishplbyid/" + Id);
       if (res.code !== 200) {
         return this.$message.error("查询模块信息失败！");
