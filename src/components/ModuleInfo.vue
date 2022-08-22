@@ -341,7 +341,8 @@ export default {
         ModuleName: [
           { required: true, message: "请输入模块名称", trigger: "blur" },
           {
-            pattern: /^[\u4e00-\u9fa5A-Za-z]+$/,
+            //pattern: /^[\u4e00-\u9fa5A-Za-z]+$/,
+            pattern:/(\w*[\u4e00-\u9fa5]+)+/,
             required: true,
             message: "请输入中文",
             trigger: "blur",
