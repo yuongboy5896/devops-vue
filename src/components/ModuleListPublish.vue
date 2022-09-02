@@ -1,5 +1,6 @@
 <template>
   <div style="height: 100%">
+    <label>{{this.dictValue.ModuleName}} </label>
     <!-- 卡片视图区域 -->
     <el-card>
       <!-- 搜索与添加区域 -->
@@ -28,7 +29,11 @@
       <!-- 模块列表区域 -->
       <el-table :data="pipeLineList" border stripe>
         <el-table-column type="index"></el-table-column>
-        <el-table-column label="发布环境" prop="EnvName"></el-table-column>
+        <el-table-column label="发布环境"  show-overflow-tooltip>
+          <template slot-scope="scope">
+            <a :href="jenkins+scope.row.PipeCode" target="_blank" class="buttonText">{{scope.row.EnvName}}</a>
+          </template>
+        </el-table-column>
         <el-table-column label="代码分支" prop="Branch"></el-table-column>
         <el-table-column label="命名空间" prop="NameSpace"></el-table-column>
         <el-table-column label="模块名字" prop="ModuleName"></el-table-column>
@@ -217,6 +222,8 @@
 export default {
   data() {
     return {
+      //
+      jenkins:"http://192.168.48.37:8080/job/",
       // 获取模块列表的参数对象
       queryInfo: {
         query: "",
@@ -324,6 +331,7 @@ export default {
       if (res.code !== 200) {
         return this.$message.error("获取模块列表失败！");
       }
+      this.pipeLineList = null;
       if (res.data !== null) {
         this.pipeLineList = res.data;
 

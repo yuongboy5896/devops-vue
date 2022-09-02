@@ -4,6 +4,8 @@
       <el-tree
         :data="moduleInfolist"
         :props="defaultProps"
+        :current-node-key="current"
+        highlight-current
         @node-click="handleNodeClick"
       ></el-tree>
     </div>
@@ -19,6 +21,7 @@ import Modulelistpublish from "./ModuleListPublish.vue";
 export default {
   data() {
     return {
+      current: '',
       moduleInfolist: [],
       defaultProps: {
         children: "children",
@@ -45,8 +48,12 @@ export default {
         return this.$message.error("获取模块列表失败！");
       }
       this.moduleInfolist = res.data;
+      if( res.data.length >0 ){
+        this.current = res.data[0].ModuleName;
+        this.dictValue = res.data[0];
+        console.log(this.current)
+      }
       this.total = res.data.length;
-      console.log(res);
     },
   },
   components: {
