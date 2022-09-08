@@ -223,7 +223,7 @@ export default {
   data() {
     return {
       //
-      jenkins:"http://192.168.48.37:8080/job/",
+      jenkins:"",
       // 获取模块列表的参数对象
       queryInfo: {
         query: "",
@@ -291,6 +291,7 @@ export default {
       selectedDeployEnvItem: "",
       // 已选中的信息命名空间
       selectedNameSpaceId: "",
+      total: 0,
     };
   },
   props: {
@@ -306,6 +307,7 @@ export default {
   },
   created() {
     console.log("发布流程");
+    this.getJenkinsUrl();
     this.getPipeLineList();
   },
   methods: {
@@ -320,6 +322,20 @@ export default {
       console.log(newPage);
       this.queryInfo.pagenum = newPage;
       this.getModuleInfoList();
+    },
+    async getJenkinsUrl() {
+        const { data: res } = await this.$http.get(
+        "/api/getjenkinsurl" ,
+        {
+          params: null,
+        }
+      );
+      if (res.code !== 200) {
+        return this.$message.error("获取jenkins的地址失败！");
+      }
+      if (res.data !== null) {
+        this.jenkins = res.data;     
+      }
     },
     async getPipeLineList() {
       const { data: res } = await this.$http.get(
