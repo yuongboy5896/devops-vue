@@ -9,6 +9,9 @@ import ModulePublish from '../components/ModulePublish.vue'
 import Images from '../components/Images.vue'
 import JobTemplate from '../components/JobTemplate.vue'
 import Vmware from '../components/vwm.vue'
+import Testyaml from '@/components/YamlEditor/CodeEditor.vue';
+
+
 
 Vue.use(VueRouter)
 
@@ -26,7 +29,8 @@ const routes = [
       { path: '/modulepublish', component: ModulePublish },
       { path: '/images', component: Images },
       { path: '/JobTemplate', component: JobTemplate },
-      { path: '/vwm', component: Vmware }
+      { path: '/vwm', component: Vmware },
+      { path: '/testyaml', component: Testyaml }
     ]
   }
 ]

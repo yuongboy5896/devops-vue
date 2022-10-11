@@ -107,10 +107,12 @@
           <el-input v-model="AddForm.TemplateType"></el-input>
         </el-form-item>
         <el-form-item label="模版yaml">
-          <el-input v-model="AddForm.TemplateText"></el-input>
+          <div class="editor-container">
+            <yaml-editor  v-model="AddForm.TemplateText" />
+          </div>
         </el-form-item>
         <el-form-item label="模版jenkins">
-          <el-input v-model="AddForm.TemplateJekins"></el-input>
+          <el-input type="textarea" :rows="20" v-model="AddForm.TemplateJekins" mode="text/yaml"></el-input>
         </el-form-item>
       </el-form>
       <!-- 底部区域 -->
@@ -125,6 +127,7 @@
       title="修改环境"
       :visible.sync="editDialogVisible"
       width="30%"
+      lock-scroll=false
       :before-close="handleClose"
       @close="editDialogClose"
     >
@@ -143,12 +146,15 @@
         <el-form-item label="模版类型" prop="TemplateType">
           <el-input v-model="editForm.TemplateType"></el-input>
         </el-form-item>
-        <el-form-item label="模版yaml" prop="TemplateText">
-          <el-input v-model="editForm.TemplateText"></el-input>
-        </el-form-item>
-        <el-form-item label="模版jenkins模版">
-          <el-input v-model="editForm.TemplateJekins"></el-input>
-        </el-form-item>
+        <label>模版yaml</label>
+          <div class="editor-container">
+            <yaml-editor  v-model="editForm.TemplateText" mode="text/yaml"/>
+          </div>
+
+        <label>模版jenkins模版</label>
+          <div class="editor-container">
+            <yaml-editor  v-model="editForm.TemplateJekins" mode="XML/HTML"/>
+          </div>  
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="editDialogVisible = false">取 消</el-button>
@@ -159,7 +165,9 @@
 </template>
 
 <script>
+import YamlEditor from '@/components/YamlEditor/index.vue';
 export default {
+  components: { YamlEditor },
   data() {
     // 验证邮箱的规则
     var IsIP = (rule, value, cb) => {
@@ -377,4 +385,11 @@ export default {
 </script>
 
 <style lang="less" scoped>
+</style>
+
+<style scoped>
+.editor-container{
+  position: relative;
+  height: 100%;
+}
 </style>

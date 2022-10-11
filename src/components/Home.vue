@@ -126,6 +126,13 @@ export default {
               path: "JobTemplate",
               children: [],
               order: null,
+            },
+            {
+              id: 114,
+              authName: "yaml模版",
+              path: "testyaml",
+              children: [],
+              order: null,
             }
           ],
           order: 1,
