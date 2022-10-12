@@ -120,7 +120,13 @@
             </el-select>
           </el-form-item>
           <el-form-item label="命名空间" prop="ModuleCode">
-            <el-input v-model="addPipeLineForm.NameSpace"></el-input>
+             <el-select v-model="editPipeLineForm.NameSpace" placeholder="请选择">
+              <el-option
+                v-for="item in namespaceList"
+                :key="item.name"
+                :label="item.name"
+                :value="item.name"
+              >
           </el-form-item>
           <el-form-item label="模块的分支" prop="PipeName">
             <el-select v-model="addPipeLineForm.Branch" placeholder="请选择">
@@ -183,7 +189,13 @@
             </el-select>
           </el-form-item>
           <el-form-item label="命名空间">
-            <el-input v-model="editPipeLineForm.NameSpace"></el-input>
+            <el-select v-model="editPipeLineForm.NameSpace" placeholder="请选择">
+              <el-option
+                v-for="item in namespaceList"
+                :key="item.name"
+                :label="item.name"
+                :value="item.name"
+              >
           </el-form-item>
           <el-form-item label="模块的分支">
             <el-select v-model="editPipeLineForm.Branch" placeholder="请选择">
@@ -283,6 +295,8 @@ export default {
       },
       // 分支数据
       branchList: [],
+      // 命名空间
+      namespaceList: [],
       // 分支环境列表
       deployEnvList: [],
       // 已选中的角色分支name api 只提供名字
