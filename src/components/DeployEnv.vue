@@ -117,6 +117,9 @@
         <el-form-item label="连接方式">
           <el-input v-model="AddForm.EnvConn"></el-input>
         </el-form-item>
+        <el-form-item label="密钥">
+          <el-input type="textarea" :rows="20"  v-model="AddForm.EnvKey"></el-input>
+        </el-form-item>
         <el-form-item label="是否公有云">
           <el-tooltip v-model="AddForm.EnvCommCloud">
             <el-switch
@@ -168,6 +171,9 @@
         </el-form-item>
         <el-form-item label="连接方式">
           <el-input v-model="editForm.EnvConn"></el-input>
+        </el-form-item>
+        <el-form-item label="密钥">
+          <el-input type="textarea" :rows="20" v-model="editForm.EnvKey"></el-input>
         </el-form-item>
         <el-form-item label="是否公有云">
           <el-input v-model="editForm.EnvCommCloud"></el-input>
@@ -242,6 +248,7 @@ export default {
         EnvConn: "",
         EnvConnPort: "",
         EnvCommCloud: false,
+        EnvKey: "",
       },
       AddFormRules: {
         EnvName: [
@@ -289,6 +296,7 @@ export default {
         EnvConn: "",
         EnvConnPort: "",
         EnvCommCloud: false,
+        EnvKey: "",
       },
       editFormRules: {
         EnvName: [
@@ -401,6 +409,7 @@ export default {
             EnvConn: this.editForm.EnvConn,
             EnvCode: this.editForm.EnvCode,
             EnvConnPort: this.editForm.EnvConnPort,
+            EnvKey: this.editForm.EnvKey,
             Desc: this.editForm.Desc,
           }
         );
