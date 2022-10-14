@@ -109,7 +109,7 @@
             <el-input v-model="addPipeLineForm.ModuleName" disabled></el-input>
           </el-form-item>
           <el-form-item label="部署环境" prop="ModuleCode">
-            <el-select v-model="selectedDeployEnvItem" placeholder="请选择">
+            <el-select @change="getNamespaces" v-model="selectedDeployEnvItem" placeholder="请选择">
               <el-option
                 v-for="item in deployEnvList"
                 :key="item.Id"
@@ -120,13 +120,15 @@
             </el-select>
           </el-form-item>
           <el-form-item label="命名空间" prop="ModuleCode">
-             <el-select v-model="editPipeLineForm.NameSpace" placeholder="请选择">
+             <el-select  v-model="addPipeLineForm.NameSpace" placeholder="请选择">
               <el-option
                 v-for="item in namespaceList"
-                :key="item.name"
-                :label="item.name"
-                :value="item.name"
+                :key="item.metadata.name"
+                :label="item.metadata.name"
+                :value="item.metadata.name"
               >
+              </el-option>
+            </el-select>
           </el-form-item>
           <el-form-item label="模块的分支" prop="PipeName">
             <el-select v-model="addPipeLineForm.Branch" placeholder="请选择">
@@ -178,7 +180,7 @@
             <el-input v-model="editPipeLineForm.ModuleName" disabled></el-input>
           </el-form-item>
           <el-form-item label="部署环境">
-            <el-select v-model="editPipeLineForm.EnvId" placeholder="请选择">
+            <el-select @change="getNamespaces" v-model="selectedDeployEnvItem" placeholder="请选择">
               <el-option
                 v-for="item in deployEnvList"
                 :key="item.Id"
@@ -189,13 +191,15 @@
             </el-select>
           </el-form-item>
           <el-form-item label="命名空间">
-            <el-select v-model="editPipeLineForm.NameSpace" placeholder="请选择">
+            <el-select @click="getNamespaces" v-model="editPipeLineForm.NameSpace" placeholder="请选择">
               <el-option
                 v-for="item in namespaceList"
-                :key="item.name"
-                :label="item.name"
-                :value="item.name"
+                :key="item.metadata.name"
+                :label="item.metadata.name"
+                :value="item.metadata.name"
               >
+              </el-option>
+            </el-select>
           </el-form-item>
           <el-form-item label="模块的分支">
             <el-select v-model="editPipeLineForm.Branch" placeholder="请选择">
@@ -364,9 +368,35 @@ export default {
       this.pipeLineList = null;
       if (res.data !== null) {
         this.pipeLineList = res.data;
-
         this.total = res.data.length;
       }
+    },
+    //
+    //
+    async getNamespaces() {
+      // 可以发起添加模块的网络请求
+      var EnvItem;
+      if (!this.selectedDeployEnvItem) {
+        return this.$message.error("请选择环境信息！");
+      }
+      console.log(this.deployEnvList);
+      console.log(this.selectedDeployEnvItem);
+        for (var i = 0; i < this.deployEnvList.length; i++) {
+          if (this.deployEnvList[i].Id === this.selectedDeployEnvItem) {
+            EnvItem = this.deployEnvList[i];
+          }
+      }
+     console.log(EnvItem);
+      const { data: res } = await this.$http.get(
+        "/api/getnamesapces?clusterid=" + EnvItem.Id
+      );
+
+      if (res.code !== 200) {
+        return this.$message.error("获取k8s命名数据失败！");
+      }
+      // 把获取到的权限数据保存到 data 中
+      this.namespaceList = res.data;
+      console.log(this.namespaceList)
     },
     // 添加流水线部署
     async addPipelineDialog(ModuleInfo) {
@@ -380,7 +410,7 @@ export default {
 
       // 把获取到的权限数据保存到 data 中
       this.branchList = res.data;
-      console.log(this.branchList);
+    
       this.addPipeLineForm.GitlabId = ModuleInfo.GitlabId;
       this.addPipeLineForm.SshUrlToRepo = ModuleInfo.SshUrlToRepo;
       this.addPipeLineForm.ModuleName = ModuleInfo.ModuleName;
