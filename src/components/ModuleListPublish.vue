@@ -415,8 +415,9 @@ export default {
       }
     },
     async getPipeLineList() {
+       console.log(this.dictValue)
       const { data: res } = await this.$http.get(
-        "/api/getpllistbygitlabid/" + this.dictValue.ModuleCode,
+        "/api/getpllistbygitlabid/" + this.dictValue.GitlabId,
         {
           params: this.queryInfo,
         }
