@@ -210,7 +210,7 @@
           <el-form-item label="部署模版">
             <el-select
               @change="JobTemplateList"
-              v-model="selectedJobTempleId"
+              v-model="editPipeLineForm.YamlId"
               placeholder="请选择"
             >
               <el-option
@@ -225,7 +225,7 @@
           <el-form-item label="部署环境">
             <el-select
               @change="getNamespaces"
-              v-model="selectedDeployEnvItem"
+              v-model="editPipeLineForm.EnvId"
               placeholder="请选择"
             >
               <el-option
@@ -249,9 +249,9 @@
             >
               <el-option
                 v-for="item in namespaceList"
-                :key="item.metadata.name"
+                :key="item.metadata.key"
                 :label="item.metadata.name"
-                :value="item.metadata.name"
+                :value="item.metadata.code"
               >
               </el-option>
             </el-select>
@@ -522,6 +522,13 @@ export default {
         this.addPipeLineForm.EnvCode = EnvItem.EnvCode;
 
         this.addPipeLineForm.EnvCommCloud = EnvItem.EnvCommCloud;
+
+
+        // 模版ID
+         if (!this.JobTemplateList.Id) {
+          return this.$message.error("请选择环境信息！");
+        }
+        this.editPipeLineForm.YamlId = this.JobTemplateList.Id;
         const { data: res } = await this.$http.post(
           "/api/addpl",
           this.addPipeLineForm
@@ -559,15 +566,17 @@ export default {
         this.editPipeLineForm.EnvName = EnvItem.EnvName;
         this.editPipeLineForm.EnvId = EnvItem.Id;
         this.editPipeLineForm.EnvCode = EnvItem.EnvCode;
+      
+    
         const { data: res } = await this.$http.put(
           "/api/updatepl/" + this.editPipeLineForm.Id,
           this.editPipeLineForm
         );
         if (res.code !== 200) {
-          this.$message.error("添加模块失败！");
+          this.$message.error("修改模块失败！");
           return;
         }
-        this.$message.success("添加模块成功！");
+        this.$message.success("修改模块成功！");
       });
       // 隐藏添加模块的对话框
       this.editPipeLineDialogVisible = false;
@@ -592,12 +601,43 @@ export default {
       this.addPipeLineForm.PipeName =
         EnvName + "-" + this.addPipeLineForm.ModuleName;
     },
-    // 发布(部署程序)程序
+    // 发布(部署程序)程序 (应该就写一个 ,因为菜 ,学习)
     async saveAddInstallDeploy() {
 
     },
-    // 发布(部署程序)程序
+    // 发布(部署程序)程序(应该就写一个 ,因为菜)
     async saveEditInstallDeploy() {
+      if (!this.editPipeLineForm.Branch) {
+        return this.$message.error("请选择分支！");
+      }
+      if (!this.editPipeLineForm.EnvId) {
+        return this.$message.error("请选择环境信息！");
+      }
+
+      this.$refs.editPipeLineFormRef.validate(async (valid) => {
+        // 可以发起添加模块的网络请求
+        var EnvItem;
+        for (var i = 0; i < this.deployEnvList.length; i++) {
+          if (this.deployEnvList[i].Id === this.editPipeLineForm.EnvId) {
+            EnvItem = this.deployEnvList[i];
+          }
+        }
+        this.editPipeLineForm.EnvName = EnvItem.EnvName;
+        this.editPipeLineForm.EnvId = EnvItem.Id;
+        this.editPipeLineForm.EnvCode = EnvItem.EnvCode;
+        console.log('部署' + this.editPipeLineForm)
+        const { data: res } = await this.$http.post(
+          "/api/createfromyaml",
+          this.editPipeLineForm
+        );
+        if (res.code !== 200) {
+          this.$message.error("部署失败！");
+          return;
+        }
+        this.$message.success("部署成功！");
+        this.getAddDeployStatus();
+      });
+
 
     },
     // 获取Deploy部署状态
@@ -642,14 +682,15 @@ export default {
     },
     // 生产部署流程信息，部署名称、部署编号 编辑对话框
     setEditPipeLineInfo() {
-      if (!this.selectedDeployEnvItem) {
+      console.log(this.editPipeLineForm.EnvId);
+      if (!this.editPipeLineForm.EnvId) {
         return this.$message.error("请选择环境信息！");
       }
       console.log(this.editPipeLineForm.EnvId);
       var EnvName;
       var EnvCode;
       for (var i = 0; i < this.deployEnvList.length; i++) {
-        if (this.deployEnvList[i].Id === this.selectedDeployEnvItem) {
+        if (this.deployEnvList[i].Id === this.editPipeLineForm.EnvId) {
           EnvCode = this.deployEnvList[i].EnvCode;
           EnvName = this.deployEnvList[i].EnvName;
         }
@@ -709,8 +750,10 @@ export default {
       if (res.code !== 200) {
         return this.$message.error("查询模块信息失败！");
       }
-      // this.selectedDeployEnvItem = res.data.EnvId
+
       this.editPipeLineForm = res.data;
+      console.log("init: "+ res.data)
+      this.selectedJobTemple =res.data.YamlId
       this.editPipeLineDialogVisible = true;
     },
     // 关闭编辑对话框
