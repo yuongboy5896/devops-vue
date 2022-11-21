@@ -106,6 +106,29 @@
         <el-form-item label="模版类型" prop="TemplateType">
           <el-input v-model="AddForm.TemplateType"></el-input>
         </el-form-item>
+        <el-form-item label="对应关系" prop="TemplateType">
+         <form>
+          <!--item的名称-->
+          <input type="text" v-model="Template" />
+          <!--item的数量-->
+          <el-select v-model="title" placeholder="请选择">
+              <el-option
+                v-for="item in ObjectList"
+                :key="item.key"
+                :label="item.Value"
+                :value="item.Value"
+              >
+              </el-option>
+            </el-select>
+          <button type="button" v-on:click="addRelational(item)">添加关系</button>
+        </form>
+         <ul>
+            <li v-for="item in Relationlist" :key="item.template">
+               {{ item.template }} : {{ item.Coding }}
+            </li>
+          </ul>
+
+        </el-form-item>
         <el-form-item label="模版yaml">
           <div class="editor-container">
             <yaml-editor  v-model="AddForm.TemplateText" />
@@ -203,11 +226,22 @@ export default {
         pagesize: 2,
       },
       tempInfoList: [],
+      //
+      ObjectList: {},
       total: 0,
       //控制添加环境对话框的显示与隐藏
       dialogVisible: false,
       editDialogVisible: false,
-
+      //对应关系 
+      Relationlist: {},
+      //替换模版中的
+      Template: "",
+      RelationalType: {
+          template: "",
+          Coding: "",
+          Remarks: ""
+      }
+      ,
       AddForm: {
         TemplateType: "",
         TemplateName: "",
@@ -275,7 +309,9 @@ export default {
     };
   },
   created() {
+    
     this.getTempInfoList();
+    this.getDeployObject();
   },
   methods: {
     async getTempInfoList() {
@@ -317,7 +353,20 @@ export default {
         this.getTempInfoList();
       });
     },
+    async getDeployObject(){
+     
+      const { data: res } = await this.$http.get("/api/getdeployobject");
+      if (res.code !== 200) {
+        return this.$message.error("查询环境数据失败！");
+      }
+      alert(res.data);
+      this.ObjectList = res.data;
+      console.log( res.data);
+
+     
+    },
     async showEditDialog(Id) {
+      
       const { data: res } = await this.$http.get("/api/gettc/" + Id);
 
       if (res.code !== 200) {
@@ -352,6 +401,13 @@ export default {
       this.$message.success("更新环境信息成功！");
       
       
+    },
+    //添加对于关系
+     addRelational(item) {
+        this.RelationalType.Template = this.Template;
+        this.RelationalType.Coding = item.Value;
+        this.RelationalType.Remarks  = item.Key;
+        console.log(RelationalType);
     },
     //
     async removeUserById(Id) {
