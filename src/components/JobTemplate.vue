@@ -87,8 +87,8 @@
       title="添加模版"
       :visible.sync="dialogVisible"
       width="50%"
-      :before-close="handleClose"
       @close="addDiaglgoClosed"
+      destroy-on-close
     >
       <!-- 内容主体区域 -->
       <el-form
@@ -107,28 +107,62 @@
           <el-input v-model="AddForm.TemplateType"></el-input>
         </el-form-item>
         <el-form-item label="对应关系" prop="TemplateType">
-         <form>
-          <!--item的名称-->
-          <input type="text" v-model="Template" />
-          <!--item的数量-->
-          <el-select v-model="title" placeholder="请选择">
-              <el-option
-                v-for="item in ObjectList"
-                :key="item.key"
-                :label="item.Value"
-                :value="item.Value"
+          <el-row :gutter="20">
+            <!--item的名称-->
+            <el-col :span="8">
+              <el-input
+                placeholder="请输入对应关系"
+                v-model="template" 
               >
-              </el-option>
-            </el-select>
-          <button type="button" v-on:click="addRelational(item)">添加关系</button>
-        </form>
-         <ul>
-            <li v-for="item in Relationlist" :key="item.template">
+              </el-input>
+            </el-col>
+            <!--item的数量-->
+            <el-col :span="8">
+              <el-select v-model="relationName" placeholder="请选择">
+                <el-option
+                  v-for="item in ObjectList"
+                  :key="item.key"
+                  :label="item.Value"
+                  :value="item.Value"
+                >
+                </el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="4">
+             <el-button
+                type="primary"
+                @click="addRelational()"
+              >添加关系</el-button>
+            </el-col>
+          </el-row>
+        <!--<ul>
+            <li v-for="item in relationList" :key="item.template">
                {{ item.template }} : {{ item.Coding }}
             </li>
-          </ul>
-
+          </ul>-->
         </el-form-item>
+        <el-table :data="relationList" v-if="relationList.length>0">
+          <el-table-column label="名称" prop="template"></el-table-column>
+          <el-table-column label="类型" prop="relationName"></el-table-column>
+          <el-table-column label="操作" >
+           <template slot-scope="scope">
+            <!-- 修改按钮 -->
+            <el-button
+                type="primary"
+                size="mini"
+                icon="el-icon-edit"
+                @click="editRalation(scope.row)"
+              ></el-button>
+              <!--删除按钮-->
+              <el-button
+                type="danger"
+                size="mini"
+                icon="el-icon-delete"
+                @click="deleteRelation(scope.row)"
+              ></el-button>
+            </template>
+          </el-table-column>
+        </el-table>
         <el-form-item label="模版yaml">
           <div class="editor-container">
             <yaml-editor  v-model="AddForm.TemplateText" />
@@ -151,7 +185,6 @@
       :visible.sync="editDialogVisible"
       width="30%"
       lock-scroll=false
-      :before-close="handleClose"
       @close="editDialogClose"
     >
       <el-form
@@ -217,6 +250,7 @@ export default {
       cb(new Error("请输入合法端口"));
     };
     return {
+      relationName:"",//关系名称
       // 获取环境的列表的参数对象
       queryInfo: {
         query: "",
@@ -233,15 +267,14 @@ export default {
       dialogVisible: false,
       editDialogVisible: false,
       //对应关系 
-      Relationlist: {},
+      relationList: [],
       //替换模版中的
-      Template: "",
+      template: "",
       RelationalType: {
-          template: "",
+         template: "",
           Coding: "",
           Remarks: ""
-      }
-      ,
+      },
       AddForm: {
         TemplateType: "",
         TemplateName: "",
@@ -314,6 +347,19 @@ export default {
     this.getDeployObject();
   },
   methods: {
+    //修改对应关系
+    editRalation(row){
+
+    },
+    //删除对应关系
+    deleteRelation(row){
+       for (let i = 0; i<this.relationList.length; i++){
+             if (this.relationList[i].template == row.template){
+              this.relationList.splice(this.relationList[i], 1)
+             }
+        }
+        this.AddForm.ReplaceText = JSON.stringify(this.relationList)
+    },
     async getTempInfoList() {
       const { data: res } = await this.$http.get(
         "/api/gettclist" //{
@@ -336,6 +382,9 @@ export default {
       this.getTempInfoList();
     },
     addDiaglgoClosed() {
+      this.relationList = [];
+      this.template = "";
+      this.relationName = "";
       this.$refs.addFormRef.resetFields();
     },
     addJobTemplate() {
@@ -359,7 +408,6 @@ export default {
       if (res.code !== 200) {
         return this.$message.error("查询环境数据失败！");
       }
-      alert(res.data);
       this.ObjectList = res.data;
       console.log( res.data);
 
@@ -403,11 +451,20 @@ export default {
       
     },
     //添加对于关系
-     addRelational(item) {
-        this.RelationalType.Template = this.Template;
-        this.RelationalType.Coding = item.Value;
-        this.RelationalType.Remarks  = item.Key;
-        console.log(RelationalType);
+     addRelational() {
+       if(this.template =="" || this.relationName == "")
+       {
+         this.$message.error("数据不能为空！");
+         return
+       }
+       var params ={
+         template:this.template,
+         relationName:this.relationName
+       }
+       this.relationList.push(params)
+       this.template = "";
+       this.relationName = "";
+       this.AddForm.ReplaceText = JSON.stringify(this.relationList)
     },
     //
     async removeUserById(Id) {
