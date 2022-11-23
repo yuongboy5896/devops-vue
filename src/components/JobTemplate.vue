@@ -97,7 +97,7 @@
         ref="addFormRef"
         label-width="150"
       >
-        <el-form-item label="模版名称" prop="TemplateName" >
+        <el-form-item label="模版名称" prop="TemplateName">
           <el-input v-model="AddForm.TemplateName"></el-input>
         </el-form-item>
         <el-form-item label="模版编码" prop="TemplateCode">
@@ -110,10 +110,7 @@
           <el-row :gutter="20">
             <!--item的名称-->
             <el-col :span="8">
-              <el-input
-                placeholder="请输入对应关系"
-                v-model="template" 
-              >
+              <el-input placeholder="请输入对应关系" v-model="template">
               </el-input>
             </el-col>
             <!--item的数量-->
@@ -129,25 +126,45 @@
               </el-select>
             </el-col>
             <el-col :span="4">
-             <el-button
-                type="primary"
-                @click="addRelational()"
-              >添加关系</el-button>
+              <el-button type="primary" @click="addRelational()"
+                >添加关系</el-button
+              >
             </el-col>
           </el-row>
-        <!--<ul>
+          <!--<ul>
             <li v-for="item in relationList" :key="item.template">
                {{ item.template }} : {{ item.Coding }}
             </li>
           </ul>-->
         </el-form-item>
-        <el-table :data="relationList" v-if="relationList.length>0">
-          <el-table-column label="名称" prop="template"></el-table-column>
+        <el-table :data="relationList" v-if="relationList.length > 0">
+          <el-table-column label="名称" prop="template">
+            <template slot-scope="scope">
+              <el-input
+                placeholder="请输入内容"
+                v-model="scope.row.template"
+                :disabled="scope.row.update == 0 ? true : false"
+                style="width: 75%"
+              ></el-input>
+              <i
+                class="el-icon-edit-outline"
+                style="margin-left: 10px"
+                v-if="scope.row.update == 0"
+                @click="scope.row.update = 1"
+              ></i>
+              <i
+                class="el-icon-check"
+                style="margin-left: 10px"
+                v-else
+                @click="updateRemark(scope.row)"
+              ></i>
+            </template>
+          </el-table-column>
           <el-table-column label="类型" prop="relationName"></el-table-column>
-          <el-table-column label="操作" >
-           <template slot-scope="scope">
-            <!-- 修改按钮 -->
-            <el-button
+          <el-table-column label="操作">
+            <template slot-scope="scope">
+              <!-- 修改按钮 -->
+              <el-button
                 type="primary"
                 size="mini"
                 icon="el-icon-edit"
@@ -165,11 +182,16 @@
         </el-table>
         <el-form-item label="模版yaml">
           <div class="editor-container">
-            <yaml-editor  v-model="AddForm.TemplateText" />
+            <yaml-editor v-model="AddForm.TemplateText" />
           </div>
         </el-form-item>
         <el-form-item label="模版jenkins">
-          <el-input type="textarea" :rows="20" v-model="AddForm.TemplateJekins" mode="text/yaml"></el-input>
+          <el-input
+            type="textarea"
+            :rows="20"
+            v-model="AddForm.TemplateJekins"
+            mode="text/yaml"
+          ></el-input>
         </el-form-item>
       </el-form>
       <!-- 底部区域 -->
@@ -184,7 +206,7 @@
       title="修改环境"
       :visible.sync="editDialogVisible"
       width="30%"
-      lock-scroll=false
+      lock-scroll="false"
       @close="editDialogClose"
     >
       <el-form
@@ -203,14 +225,14 @@
           <el-input v-model="editForm.TemplateType"></el-input>
         </el-form-item>
         <label>模版yaml</label>
-          <div class="editor-container">
-            <yaml-editor  v-model="editForm.TemplateText" mode="text/yaml"/>
-          </div>
+        <div class="editor-container">
+          <yaml-editor v-model="editForm.TemplateText" mode="text/yaml" />
+        </div>
 
         <label>模版jenkins模版</label>
-          <div class="editor-container">
-            <yaml-editor  v-model="editForm.TemplateJekins" mode="XML/HTML"/>
-          </div>  
+        <div class="editor-container">
+          <yaml-editor v-model="editForm.TemplateJekins" mode="XML/HTML" />
+        </div>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="editDialogVisible = false">取 消</el-button>
@@ -221,7 +243,7 @@
 </template>
 
 <script>
-import YamlEditor from '@/components/YamlEditor/index.vue';
+import YamlEditor from "@/components/YamlEditor/index.vue";
 export default {
   components: { YamlEditor },
   data() {
@@ -250,7 +272,7 @@ export default {
       cb(new Error("请输入合法端口"));
     };
     return {
-      relationName:"",//关系名称
+      relationName: "", //关系名称
       // 获取环境的列表的参数对象
       queryInfo: {
         query: "",
@@ -266,14 +288,15 @@ export default {
       //控制添加环境对话框的显示与隐藏
       dialogVisible: false,
       editDialogVisible: false,
-      //对应关系 
+      //对应关系
       relationList: [],
       //替换模版中的
       template: "",
       RelationalType: {
-         template: "",
-          Coding: "",
-          Remarks: ""
+        template: "",
+        Coding: "",
+        Remarks: "",
+        update: 0
       },
       AddForm: {
         TemplateType: "",
@@ -282,7 +305,7 @@ export default {
         TemplateType: "",
         //连接方式 api ssh
         TemplateText: "",
-        TemplateJekins: ""
+        TemplateJekins: "",
       },
       AddFormRules: {
         TemplateName: [
@@ -303,7 +326,6 @@ export default {
             trigger: "blur",
           },
         ],
-       
       },
       editForm: {
         TemplateName: "",
@@ -342,23 +364,33 @@ export default {
     };
   },
   created() {
-    
     this.getTempInfoList();
     this.getDeployObject();
   },
   methods: {
     //修改对应关系
-    editRalation(row){
-
-    },
+    editRalation(row) {},
     //删除对应关系
-    deleteRelation(row){
-       for (let i = 0; i<this.relationList.length; i++){
-             if (this.relationList[i].template == row.template){
-              this.relationList.splice(this.relationList[i], 1)
-             }
+    deleteRelation(row) {
+      for (let i = 0; i < this.relationList.length; i++) {
+        if (this.relationList[i].template == row.template) {
+          this.relationList.splice(this.relationList[i], 1);
         }
-        this.AddForm.ReplaceText = JSON.stringify(this.relationList)
+      }
+      this.AddForm.ReplaceText = JSON.stringify(this.relationList);
+    },
+    // 更新表中数据
+    updateRemark(rows){
+      console.log(rows)
+      for (let i = 0; i < this.relationList.length; i++) {
+        if (this.relationList[i].relationName == rows.relationName) {
+          this.relationList[i].template =  rows.template
+          rows.update = 0
+        }
+      }
+    },
+    handleClick(rows){
+      console.log(rows) 
     },
     async getTempInfoList() {
       const { data: res } = await this.$http.get(
@@ -402,19 +434,15 @@ export default {
         this.getTempInfoList();
       });
     },
-    async getDeployObject(){
-     
+    async getDeployObject() {
       const { data: res } = await this.$http.get("/api/getdeployobject");
       if (res.code !== 200) {
         return this.$message.error("查询环境数据失败！");
       }
       this.ObjectList = res.data;
-      console.log( res.data);
-
-     
+      console.log(res.data);
     },
     async showEditDialog(Id) {
-      
       const { data: res } = await this.$http.get("/api/gettc/" + Id);
 
       if (res.code !== 200) {
@@ -436,7 +464,6 @@ export default {
             TemplateJekins: this.editForm.TemplateJekins,
             TemplateCode: this.editForm.TemplateCode,
             TemplateText: this.editForm.TemplateText,
- 
           }
         );
         if (res.code !== 200) {
@@ -447,24 +474,31 @@ export default {
       this.getTempInfoList();
       this.editDialogClose();
       this.$message.success("更新环境信息成功！");
-      
-      
     },
     //添加对于关系
-     addRelational() {
-       if(this.template =="" || this.relationName == "")
-       {
-         this.$message.error("数据不能为空！");
-         return
-       }
-       var params ={
-         template:this.template,
-         relationName:this.relationName
-       }
-       this.relationList.push(params)
-       this.template = "";
-       this.relationName = "";
-       this.AddForm.ReplaceText = JSON.stringify(this.relationList)
+    addRelational() {
+      if (this.template == "" || this.relationName == "") {
+        this.$message.error("数据不能为空！");
+        return;
+      }
+      for (let i = 0; i < this.relationList.length; i++) {
+        if (
+          this.relationList[i].template == this.template ||
+          this.relationList[i].relationName == this.relationName
+        ) {
+          this.$message.error("数据数据已存在！");
+          return;
+        }
+      }
+      var params = {
+        template: this.template,
+        relationName: this.relationName,
+        update: 0
+      };
+      this.relationList.push(params);
+      this.template = "";
+      this.relationName = "";
+      this.AddForm.ReplaceText = JSON.stringify(this.relationList);
     },
     //
     async removeUserById(Id) {
@@ -482,7 +516,7 @@ export default {
       });
       //如点击确定 返回值是字符 confirm
       //如果取消 返回值是字符 cancel
-      console.log(Id)
+      console.log(Id);
       if (confirmResult !== "confirm") {
         return this.$message.info("已经取消删除");
       }
@@ -501,7 +535,7 @@ export default {
 </style>
 
 <style scoped>
-.editor-container{
+.editor-container {
   position: relative;
   height: 100%;
 }
