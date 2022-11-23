@@ -306,11 +306,11 @@ export default {
       addPipeLineDialogVisible: false,
       // 添加模块的表单数据
       addForm: {
-        ModuleCode: "thpower-operation",
-        ModuleName: "运维管理微服务",
-        TechnologyType: "java",
-        ProjectType: "微服务",
-        GitlabUrl: "http://192.168.48.15:8080/microservice/operation",
+        ModuleCode: "",
+        ModuleName: "",
+        TechnologyType: "",
+        ProjectType: "",
+        GitlabUrl: "",
       },
       // addForm
       addPipeLineForm: {
@@ -341,7 +341,8 @@ export default {
         ModuleName: [
           { required: true, message: "请输入模块名称", trigger: "blur" },
           {
-            pattern: /^[\u0391-\uFFE5A-Za-z]+$/,
+            //pattern: /^[\u4e00-\u9fa5A-Za-z]+$/,
+            pattern:/(\w*[\u4e00-\u9fa5]+)+/,
             required: true,
             message: "请输入中文",
             trigger: "blur",

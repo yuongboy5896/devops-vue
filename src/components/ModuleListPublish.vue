@@ -1,5 +1,7 @@
 <template>
+  <div style="height: 100%">
   <div style="height:100%;">
+    <label>{{ this.dictValue.ModuleName }} </label>
     <h3 v-if="dictValue.GitlabUrl">{{ dictValue.GitlabUrl }}</h3>
     <!-- 卡片视图区域 -->
     <el-card>
@@ -29,15 +31,24 @@
       <!-- 模块列表区域 -->
       <el-table :data="pipeLineList" border stripe>
         <el-table-column type="index"></el-table-column>
-        <el-table-column label="发布环境" prop="EnvName"></el-table-column>
+        <el-table-column label="发布环境" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <a
+              :href="jenkins + scope.row.PipeCode"
+              target="_blank"
+              class="buttonText"
+              >{{ scope.row.EnvName }}</a
+            >
+          </template>
+        </el-table-column>
         <el-table-column label="代码分支" prop="Branch"></el-table-column>
         <el-table-column label="命名空间" prop="NameSpace"></el-table-column>
         <el-table-column label="模块名字" prop="ModuleName"></el-table-column>
         <el-table-column label="发布流程" prop="PipeName"></el-table-column>
-        <el-table-column label="流程编码" prop="PipeCode"></el-table-column>  
+        <el-table-column label="流程编码" prop="PipeCode"></el-table-column>
         <el-table-column label="操作">
-          <template slot-scope="scope"> 
-             <!-- 修改按钮 -->
+          <template slot-scope="scope">
+            <!-- 修改按钮 -->
             <el-button
               type="primary"
               size="mini"
@@ -64,7 +75,7 @@
                 size="mini"
                 @click="setPipeLineByIdPublish(scope.row.Id)"
               ></el-button>
-              </el-tooltip>
+            </el-tooltip>
           </template>
         </el-table-column>
       </el-table>
@@ -104,8 +115,27 @@
           <el-form-item label="模块的名字" prop="PipeName">
             <el-input v-model="addPipeLineForm.ModuleName" disabled></el-input>
           </el-form-item>
+          <el-form-item label="部署模版">
+            <el-select
+              @change="JobTemplateList"
+              v-model="selectedJobTempleId"
+              placeholder="请选择"
+            >
+              <el-option
+                v-for="item in JobTemplateList"
+                :key="item.Id"
+                :label="item.TemplateName"
+                :value="item.Id"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
           <el-form-item label="部署环境" prop="ModuleCode">
-            <el-select v-model="selectedDeployEnvItem" placeholder="请选择">
+            <el-select
+              @change="getNamespaces"
+              v-model="selectedDeployEnvItem"
+              placeholder="请选择"
+            >
               <el-option
                 v-for="item in deployEnvList"
                 :key="item.Id"
@@ -114,9 +144,21 @@
               >
               </el-option>
             </el-select>
+            <label>{{ isinstalled ? "部署" : "未部署" }}</label>
+            <el-button type="primary" @click="saveAddInstallDeploy"
+              >部署</el-button
+            >
           </el-form-item>
           <el-form-item label="命名空间" prop="ModuleCode">
-            <el-input v-model="addPipeLineForm.NameSpace"></el-input>
+            <el-select @change="getAddDeployStatus" v-model="addPipeLineForm.NameSpace" placeholder="请选择">
+              <el-option
+                v-for="item in namespaceList"
+                :key="item.metadata.name"
+                :label="item.metadata.name"
+                :value="item.metadata.name"
+              >
+              </el-option>
+            </el-select>
           </el-form-item>
           <el-form-item label="模块的分支" prop="PipeName">
             <el-select v-model="addPipeLineForm.Branch" placeholder="请选择">
@@ -129,7 +171,7 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="模块的url" >
+          <el-form-item label="模块的url">
             <el-input
               v-model="addPipeLineForm.SshUrlToRepo"
               disabled
@@ -152,7 +194,7 @@
       @close="setEditPipeLineDialogClosed"
     >
       <el-form
-        :model="editPipeLineForm" 
+        :model="editPipeLineForm"
         :rules="editPipeLineFormRules"
         ref="editPipeLineFormRef"
         label-width="70px"
@@ -164,11 +206,30 @@
           <el-form-item label="发布流程code" prop="PipeName">
             <el-input v-model="editPipeLineForm.PipeCode"></el-input>
           </el-form-item>
-          <el-form-item label="模块的名字" >
+          <el-form-item label="模块的名字">
             <el-input v-model="editPipeLineForm.ModuleName" disabled></el-input>
           </el-form-item>
-          <el-form-item label="部署环境" >
-            <el-select v-model="selectedDeployEnvItem" placeholder="请选择">
+          <el-form-item label="部署模版">
+            <el-select
+              @change="JobTemplateList"
+              v-model="editPipeLineForm.YamlId"
+              placeholder="请选择"
+            >
+              <el-option
+                v-for="item in JobTemplateList"
+                :key="item.Id"
+                :label="item.TemplateName"
+                :value="item.Id"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="部署环境">
+            <el-select
+              @change="getNamespaces"
+              v-model="editPipeLineForm.EnvId"
+              placeholder="请选择"
+            >
               <el-option
                 v-for="item in deployEnvList"
                 :key="item.Id"
@@ -177,11 +238,27 @@
               >
               </el-option>
             </el-select>
+            <label>{{ isinstalled ? "部署" : "未部署" }}</label>
+            <el-button type="primary" @click="saveEditInstallDeploy"
+              >部署</el-button
+            >
           </el-form-item>
-          <el-form-item label="命名空间" >
-            <el-input v-model="editPipeLineForm.NameSpace"></el-input>
+          <el-form-item label="命名空间">
+            <el-select
+              @click="getNamespaces"
+              v-model="editPipeLineForm.NameSpace"
+              placeholder="请选择"
+            >
+              <el-option
+                v-for="item in namespaceList"
+                :key="item.metadata.key"
+                :label="item.metadata.name"
+                :value="item.metadata.code"
+              >
+              </el-option>
+            </el-select>
           </el-form-item>
-          <el-form-item label="模块的分支" >
+          <el-form-item label="模块的分支">
             <el-select v-model="editPipeLineForm.Branch" placeholder="请选择">
               <el-option
                 v-for="item in branchList"
@@ -202,8 +279,12 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="editPipeLineDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="saveEditPipeLineInfo">确 定</el-button>
-        <el-button type="primary" @click="setEditPipeLineInfo">生产信息</el-button>
+        <el-button type="primary" @click="saveEditPipeLineInfo"
+          >确 定</el-button
+        >
+        <el-button type="primary" @click="setEditPipeLineInfo"
+          >生产信息</el-button
+        >
       </span>
     </el-dialog>
   </div>
@@ -214,6 +295,8 @@
 export default {
   data() {
     return {
+      //
+      jenkins: "",
       // 获取模块列表的参数对象
       queryInfo: {
         query: "",
@@ -227,12 +310,15 @@ export default {
       addPipeLineDialogVisible: false,
       // PipeLine编辑模块对话框的显示与隐藏
       editPipeLineDialogVisible: false,
+      // 是否部署信息
+      isinstalled: false,
       // addPipeLineForm
       addPipeLineForm: {
         PipeName: "",
         PipeCode: "",
         TechnologyType: "",
         EnvName: "",
+        EnvCode: "",
         SshUrlToRepo: "",
         Branch: "",
         GitlabId: "",
@@ -240,7 +326,9 @@ export default {
         ModuleCode: "",
         Department: "",
         ShowUrl: "",
-        ModuleName:"" //临时存储模块信息
+        NameSpace: "default",
+        ModuleName: "", //临时存储模块信息
+        EnvCommCloud: 0, //是否共有云
       },
       // 验证
       addPipeLineFormRules: {
@@ -255,29 +343,14 @@ export default {
         ],
       },
       // editPipeLine
-      editPipeLineForm: {
-        Id: "",
-        PipeName: "",
-        PipeCode: "",
-        TechnologyType: "",
-        EnvName: "",
-        SshUrlToRepo: "",
-        Branch: "",
-        GitlabId: "",
-        ModuleName: "",
-        ModuleCode: "",
-        Department: "",
-        ShowUrl: "",
-        NameSpace: "",
-        EnvId: -1
-      },
-       // 修改表单的验证规则对象
+      editPipeLineForm: {},
+      // 修改表单的验证规则对象
       editPipeLineFormRules: {
-         PipeName: [
-          { required: true, message: "请输入code", trigger: "blur" },
+        PipeName: [
+          { required: true, message: "请输入模块code", trigger: "blur" },
           {
             min: 3,
-            max: 100,
+            max: 50,
             message: "模块名的长度在3~50个字符之间",
             trigger: "blur",
           },
@@ -285,14 +358,21 @@ export default {
       },
       // 分支数据
       branchList: [],
+      // 命名空间
+      namespaceList: [],
       // 分支环境列表
       deployEnvList: [],
+      // 模版列表
+      JobTemplateList: [],
       // 已选中的角色分支name api 只提供名字
       selectedBranchId: "",
       // 已选中的环境ID
       selectedDeployEnvItem: "",
       // 已选中的信息命名空间
-      selectedNameSpaceId: "", 
+      selectedNameSpaceId: "",
+      // 已选中的部署模版
+      selectedJobTempleId: "",
+      total: 0,
     };
   },
   props: {
@@ -308,7 +388,9 @@ export default {
   },
   created() {
     console.log("发布流程");
+    this.getJenkinsUrl();
     this.getPipeLineList();
+    this.getJobTemplatelist();
   },
   methods: {
     // 监听 pagesize 改变的事件
@@ -323,20 +405,70 @@ export default {
       this.queryInfo.pagenum = newPage;
       this.getModuleInfoList();
     },
+    async getJenkinsUrl() {
+      const { data: res } = await this.$http.get("/api/getjenkinsurl", {
+        params: null,
+      });
+      if (res.code !== 200) {
+        return this.$message.error("获取jenkins的地址失败！");
+      }
+      if (res.data !== null) {
+        this.jenkins = res.data;
+      }
+    },
     async getPipeLineList() {
+       console.log(this.dictValue)
       const { data: res } = await this.$http.get(
         "/api/getpllistbygitlabid/" + this.dictValue.GitlabId,
         {
           params: this.queryInfo,
         }
       );
-      console.log(res);
       if (res.code !== 200) {
         return this.$message.error("获取模块列表失败！");
       }
-      this.pipeLineList = res.data;
-      this.total = res.data.length;
-      console.log(res);
+      this.pipeLineList = null;
+      if (res.data !== null) {
+        this.pipeLineList = res.data;
+        this.total = res.data.length;
+      }
+    },
+    //
+    //获取命名空间
+    async getJobTemplatelist() {
+      const { data: res } = await this.$http.get("/api/gettclist");
+
+      if (res.code !== 200) {
+        return this.$message.error("获取膜拜列表失败！");
+      }
+      // 把获取到的权限数据保存到 data 中
+      this.JobTemplateList = res.data;
+    },
+    //获取命名空间
+    async getNamespaces() {
+      // 可以发起添加模块的网络请求
+      var EnvItem;
+      if (!this.selectedDeployEnvItem) {
+        return this.$message.error("请选择环境信息！");
+      }
+      console.log(this.deployEnvList);
+      console.log(this.selectedDeployEnvItem);
+      for (var i = 0; i < this.deployEnvList.length; i++) {
+        if (this.deployEnvList[i].Id === this.selectedDeployEnvItem) {
+          EnvItem = this.deployEnvList[i];
+        }
+      }
+      console.log(EnvItem);
+      const { data: res } = await this.$http.get(
+        "/api/getnamesapces?clusterid=" + EnvItem.Id
+      );
+
+      if (res.code !== 200) {
+        return this.$message.error("获取k8s命名数据失败！");
+      }
+      // 把获取到的权限数据保存到 data 中
+      this.namespaceList = res.data;
+      console.log(this.namespaceList);
     },
     // 添加流水线部署
     async addPipelineDialog(ModuleInfo) {
@@ -350,7 +482,7 @@ export default {
 
       // 把获取到的权限数据保存到 data 中
       this.branchList = res.data;
-      console.log(this.branchList);
+
       this.addPipeLineForm.GitlabId = ModuleInfo.GitlabId;
       this.addPipeLineForm.SshUrlToRepo = ModuleInfo.SshUrlToRepo;
       this.addPipeLineForm.ModuleName = ModuleInfo.ModuleName;
@@ -363,13 +495,11 @@ export default {
       }
       // 把获取到的环境列表保存到 data 中
       this.deployEnvList = resde.data;
-      console.log(this.deployEnvList);
       this.addPipeLineDialogVisible = true;
     },
     //
     setPipeLineDialogClosed() {
       this.$refs.addPipeLineFormRef.resetFields();
-
     },
     // 保存部署流程
     async savePipeLineInfo() {
@@ -382,22 +512,29 @@ export default {
       this.$refs.addPipeLineFormRef.validate(async (valid) => {
         if (!valid) return;
         // 可以发起添加模块的网络请求
-        var EnvItem ;
-        for (var i = 0; i < this.deployEnvList.length; i++) { 
-            console.log(i);
-            console.log(this.deployEnvList[i].Id)
-            console.log(this.selectedDeployEnvItem)
-            if( this.deployEnvList[i].Id === this.selectedDeployEnvItem )
-            {
-              EnvItem = this.deployEnvList[i];
-
-            }
+        var EnvItem;
+        for (var i = 0; i < this.deployEnvList.length; i++) {
+          if (this.deployEnvList[i].Id === this.selectedDeployEnvItem) {
+            EnvItem = this.deployEnvList[i];
+          }
         }
-     
+
         this.addPipeLineForm.EnvName = EnvItem.EnvName;
-        this.addPipeLineForm.EnvId =  EnvItem.Id;
-        const { data: res } = await this.$http.post("/api/addpl", this.addPipeLineForm);
-        console.log(res);
+        this.addPipeLineForm.EnvId = EnvItem.Id;
+        this.addPipeLineForm.EnvCode = EnvItem.EnvCode;
+
+        this.addPipeLineForm.EnvCommCloud = EnvItem.EnvCommCloud;
+
+
+        // 模版ID
+         if (!this.JobTemplateList.Id) {
+          return this.$message.error("请选择环境信息！");
+        }
+        this.editPipeLineForm.YamlId = this.JobTemplateList.Id;
+        const { data: res } = await this.$http.post(
+          "/api/addpl",
+          this.addPipeLineForm
+        );
         if (res.code !== 200) {
           this.$message.error("添加模块失败！");
           return;
@@ -416,76 +553,156 @@ export default {
       if (!this.editPipeLineForm.Branch) {
         return this.$message.error("请选择分支！");
       }
-      if (!this.selectedDeployEnvItem) {
+      if (!this.editPipeLineForm.EnvId) {
         return this.$message.error("请选择环境信息！");
       }
-      debugger
-      console.log(this.$refs.editPipeLineFormRef);
 
       this.$refs.editPipeLineFormRef.validate(async (valid) => {
-        if (!valid) return;
         // 可以发起添加模块的网络请求
-        var EnvItem ;
-        for (var i = 0; i < this.deployEnvList.length; i++) { 
-            if( this.deployEnvList[i].Id === this.selectedDeployEnvItem )
-            {
-              EnvItem = this.deployEnvList[i];
-
-            }
+        var EnvItem;
+        for (var i = 0; i < this.deployEnvList.length; i++) {
+          if (this.deployEnvList[i].Id === this.editPipeLineForm.EnvId) {
+            EnvItem = this.deployEnvList[i];
+          }
         }
         this.editPipeLineForm.EnvName = EnvItem.EnvName;
-        this.editPipeLineForm.EnvId =  EnvItem.Id;
-        const { data: res } = await this.$http.put("/api/updatede" + editPipeLineForm.Id,
-         this.editPipeLineForm);
-        console.log(res);
+        this.editPipeLineForm.EnvId = EnvItem.Id;
+        this.editPipeLineForm.EnvCode = EnvItem.EnvCode;
+      
+    
+        const { data: res } = await this.$http.put(
+          "/api/updatepl/" + this.editPipeLineForm.Id,
+          this.editPipeLineForm
+        );
         if (res.code !== 200) {
-          this.$message.error("添加模块失败！");
+          this.$message.error("修改模块失败！");
           return;
         }
-        this.$message.success("添加模块成功！");
-        // 隐藏添加模块的对话框
-        this.addPipeLineDialogVisible = false;
-        // 重新获取模块列表数据
-        this.getPipeLineList();
+        this.$message.success("修改模块成功！");
       });
+      // 隐藏添加模块的对话框
+      this.editPipeLineDialogVisible = false;
+      // 重新获取模块列表数据
+      this.getPipeLineList();
     },
     // 生产部署流程信息，部署名称、部署编号
     setPipeLineInfo() {
       if (!this.selectedDeployEnvItem) {
         return this.$message.error("请选择环境信息！");
       }
-      console.log(this.selectedDeployEnvItem)
-      var EnvName ;
-      var EnvCode ;
-      for (var i = 0; i < this.deployEnvList.length; i++) { 
-          if( this.deployEnvList[i].Id === this.selectedDeployEnvItem )
-          {
-            EnvCode = this.deployEnvList[i].EnvCode;
-            EnvName = this.deployEnvList[i].EnvName;
-          }
+      var EnvName;
+      var EnvCode;
+      for (var i = 0; i < this.deployEnvList.length; i++) {
+        if (this.deployEnvList[i].Id === this.selectedDeployEnvItem) {
+          EnvCode = this.deployEnvList[i].EnvCode;
+          EnvName = this.deployEnvList[i].EnvName;
+        }
       }
-      this.addPipeLineForm.PipeCode = EnvCode + "-" +  this.addPipeLineForm.ModuleCode;
-      this.addPipeLineForm.PipeName = EnvName + "-" +  this.addPipeLineForm.ModuleName;
+      this.addPipeLineForm.PipeCode =
+        EnvCode + "-" + this.addPipeLineForm.ModuleCode;
+      this.addPipeLineForm.PipeName =
+        EnvName + "-" + this.addPipeLineForm.ModuleName;
+    },
+    // 发布(部署程序)程序 (应该就写一个 ,因为菜 ,学习)
+    async saveAddInstallDeploy() {
+
+    },
+    // 发布(部署程序)程序(应该就写一个 ,因为菜)
+    async saveEditInstallDeploy() {
+      if (!this.editPipeLineForm.Branch) {
+        return this.$message.error("请选择分支！");
+      }
+      if (!this.editPipeLineForm.EnvId) {
+        return this.$message.error("请选择环境信息！");
+      }
+
+      this.$refs.editPipeLineFormRef.validate(async (valid) => {
+        // 可以发起添加模块的网络请求
+        var EnvItem;
+        for (var i = 0; i < this.deployEnvList.length; i++) {
+          if (this.deployEnvList[i].Id === this.editPipeLineForm.EnvId) {
+            EnvItem = this.deployEnvList[i];
+          }
+        }
+        this.editPipeLineForm.EnvName = EnvItem.EnvName;
+        this.editPipeLineForm.EnvId = EnvItem.Id;
+        this.editPipeLineForm.EnvCode = EnvItem.EnvCode;
+        console.log('部署' + this.editPipeLineForm)
+        const { data: res } = await this.$http.post(
+          "/api/createfromyaml",
+          this.editPipeLineForm
+        );
+        if (res.code !== 200) {
+          this.$message.error("部署失败！");
+          return;
+        }
+        this.$message.success("部署成功！");
+        this.getAddDeployStatus();
+      });
+
+
+    },
+    // 获取Deploy部署状态
+    async getAddDeployStatus() {
+
+      // 可以发起添加模块的网络请求
+        var EnvItem;
+        for (var i = 0; i < this.deployEnvList.length; i++) {
+          if (this.deployEnvList[i].Id === this.selectedDeployEnvItem) {
+            EnvItem = this.deployEnvList[i];
+          }
+        }
+      console.log("getAddDeployStatus"+EnvItem.Id)
+        // 获取deploy等是否部署 当前支持deploy
+      const { data: Deploy} = await this.$http.get(
+        "/api/getdeploystatus?modulecode=" + this.dictValue.ModuleCode+
+        "&namespace=" + this.addPipeLineForm.NameSpace+
+        "&envid=" + EnvItem.Id
+      );
+
+      if (Deploy.code !== 200) {
+        //暂时支持一类
+        return this.$message.error("获取k8s的资源数据失败！");
+      }
+      // 测
+      this.isinstalled = true;
+    },
+    // 获取Deploy部署状态
+    async getEditDeployStatus() {
+        // 获取deploy等是否部署 当前支持deploy
+      const { data: Deploy} = await this.$http.get(
+        "/api/getdeploystatus/" + this.dictValue.ModuleCode
+      );
+
+      if (Deploy.code !== 200) {
+        //暂时支持一类
+        return this.$message.error("获取k8s的deploy数据失败！");
+      }
+      // 测
+   
+      this.isinstalled = true;
     },
     // 生产部署流程信息，部署名称、部署编号 编辑对话框
     setEditPipeLineInfo() {
-      if (!this.selectedDeployEnvItem) {
+      console.log(this.editPipeLineForm.EnvId);
+      if (!this.editPipeLineForm.EnvId) {
         return this.$message.error("请选择环境信息！");
       }
-      console.log(this.selectedDeployEnvItem)
-      var EnvName ;
-      var EnvCode ;
-      for (var i = 0; i < this.deployEnvList.length; i++) { 
-          if( this.deployEnvList[i].Id === this.selectedDeployEnvItem )
-          {
-            EnvCode = this.deployEnvList[i].EnvCode;
-            EnvName = this.deployEnvList[i].EnvName;
-          }
+      console.log(this.editPipeLineForm.EnvId);
+      var EnvName;
+      var EnvCode;
+      for (var i = 0; i < this.deployEnvList.length; i++) {
+        if (this.deployEnvList[i].Id === this.editPipeLineForm.EnvId) {
+          EnvCode = this.deployEnvList[i].EnvCode;
+          EnvName = this.deployEnvList[i].EnvName;
+        }
       }
-      this.editPipeLineForm.PipeCode = EnvCode + "-" +  this.editPipeLineForm.ModuleCode;
-      this.editPipeLineForm.PipeName = EnvName + "-" +  this.editPipeLineForm.ModuleName;
+      this.editPipeLineForm.PipeCode =
+        EnvCode + "-" + this.editPipeLineForm.ModuleCode;
+      this.editPipeLineForm.PipeName =
+        EnvName + "-" + this.editPipeLineForm.ModuleName;
     },
-     // 根据Id删除对应的
+    // 根据Id删除对应的
     async removePipeLineById(Id) {
       // 弹框询问Pipeline是否删除数据
       const confirmResult = await this.$confirm(
@@ -504,7 +721,6 @@ export default {
       if (confirmResult !== "confirm") {
         return this.$message.info("已取消删除");
       }
-      console.log(Id);
       const { data: res } = await this.$http.delete("/api/deletepl/" + Id);
       if (res.code !== 200) {
         return this.$message.error("删除模块信息失败！");
@@ -514,30 +730,6 @@ export default {
     },
     // 展示编辑模块的对话框
     async showPipeLineInfo(id) {
-      console.log(id)
-      const { data: res } = await this.$http.get("/api/getpllistbyid/" + id);
-
-      if (res.code !== 200) {
-        return this.$message.error("查询模块信息失败！");
-      }
-      this.editPipeLineForm.Id = res.data.Id;
-      this.editPipeLineForm.PipeName = res.data.PipeName;
-      this.editPipeLineForm.PipeCode = res.data.PipeCode;
-      this.editPipeLineForm.NameSpace = res.data.NameSpace;
-      this.editPipeLineForm.GitlabId = res.data.GitlabId;
-      this.editPipeLineForm.SshUrlToRepo = res.data.SshUrlToRepo;
-      this.editPipeLineForm.EnvId = res.data.EnvId;
-      // 环境选择。。。。
-      this.selectedDeployEnvItem= res.data.EnvId
-      // this.addPipeLineForm.Department = ModuleInfo.ModuleCode;
-      this.editPipeLineForm.Branch = res.data.Branch;
-      this.editPipeLineForm.ModuleName = res.data.ModuleName;
-      this.editPipeLineForm.ModuleCode = res.data.ModuleCode;
-      this.editPipeLineForm.TechnologyType = res.data.TechnologyType;
-      
-      
-      console.log("模块名称" + this.editPipeLineForm.ModuleName)
-
       // 获取gitlab branch
       const { data: gitlabres } = await this.$http.get(
         "/api/getgrlist/" + this.dictValue.GitlabId
@@ -547,7 +739,7 @@ export default {
         return this.$message.error("获取Gitlab数据失败！");
       }
       this.branchList = gitlabres.data;
-    
+
       // 获取环境列表
       const { data: envres } = await this.$http.get("/api/getdelist");
       if (envres.code !== 200) {
@@ -555,22 +747,28 @@ export default {
       }
       this.deployEnvList = envres.data;
       this.deployEnvList.valuetype = envres.data.Id;
-      this.editPipeLineDialogVisible = true;
+      const { data: res } = await this.$http.get("/api/getpllistbyid/" + id);
 
+      if (res.code !== 200) {
+        return this.$message.error("查询模块信息失败！");
+      }
+
+      this.editPipeLineForm = res.data;
+      console.log("init: "+ res.data)
+      this.selectedJobTemple =res.data.YamlId
+      this.editPipeLineDialogVisible = true;
     },
     // 关闭编辑对话框
     setEditPipeLineDialogClosed() {
       this.$refs.editPipeLineFormRef.resetFields();
     },
     // 发布按钮
-    async setPipeLineByIdPublish(Id){
-      console.log(Id)
+    async setPipeLineByIdPublish(Id) {
       const { data: res } = await this.$http.put("/api/publishplbyid/" + Id);
       if (res.code !== 200) {
         return this.$message.error("查询模块信息失败！");
       }
     },
-  
   },
 };
 </script>
