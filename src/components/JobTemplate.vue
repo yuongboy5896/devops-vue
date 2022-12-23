@@ -224,6 +224,80 @@
         <el-form-item label="模版类型" prop="TemplateType">
           <el-input v-model="editForm.TemplateType"></el-input>
         </el-form-item>
+        <el-form-item label="对应关系" prop="TemplateType">
+          <el-row :gutter="20">
+            <!--item的名称-->
+            <el-col :span="8">
+              <el-input placeholder="请输入对应关系" v-model="template">
+              </el-input>
+            </el-col>
+            <!--item的数量-->
+            <el-col :span="8">
+              <el-select v-model="relationName" placeholder="请选择">
+                <el-option
+                  v-for="item in ObjectList"
+                  :key="item.key"
+                  :label="item.Value"
+                  :value="item.Value"
+                >
+                </el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="4">
+              <el-button type="primary" @click="addRelational()"
+                >添加关系</el-button
+              >
+            </el-col>
+          </el-row>
+          <!--<ul>
+            <li v-for="item in relationList" :key="item.template">
+               {{ item.template }} : {{ item.Coding }}
+            </li>
+          </ul>-->
+        </el-form-item>
+        <el-table :data="relationList" v-if="relationList.length > 0">
+          <el-table-column label="名称" prop="template">
+            <template slot-scope="scope">
+              <el-input
+                placeholder="请输入内容"
+                v-model="scope.row.template"
+                :disabled="scope.row.update == 0 ? true : false"
+                style="width: 75%"
+              ></el-input>
+              <i
+                class="el-icon-edit-outline"
+                style="margin-left: 10px"
+                v-if="scope.row.update == 0"
+                @click="scope.row.update = 1"
+              ></i>
+              <i
+                class="el-icon-check"
+                style="margin-left: 10px"
+                v-else
+                @click="updateRemark(scope.row)"
+              ></i>
+            </template>
+          </el-table-column>
+          <el-table-column label="类型" prop="relationName"></el-table-column>
+          <el-table-column label="操作">
+            <template slot-scope="scope">
+              <!-- 修改按钮 -->
+              <el-button
+                type="primary"
+                size="mini"
+                icon="el-icon-edit"
+                @click="editRalation(scope.row)"
+              ></el-button>
+              <!--删除按钮-->
+              <el-button
+                type="danger"
+                size="mini"
+                icon="el-icon-delete"
+                @click="deleteRelation(scope.row)"
+              ></el-button>
+            </template>
+          </el-table-column>
+        </el-table>
         <label>模版yaml</label>
         <div class="editor-container">
           <yaml-editor v-model="editForm.TemplateText" mode="text/yaml" />
@@ -356,11 +430,6 @@ export default {
         ],
       },
       //
-      editDialogClose() {
-        this.$refs.editFormRef.resetFields();
-        this.getTempInfoList();
-      },
-      //
     };
   },
   created() {
@@ -419,6 +488,13 @@ export default {
       this.relationName = "";
       this.$refs.addFormRef.resetFields();
     },
+      //
+    editDialogClose() {
+      console.log("editDialogClose");
+      this.relationList = [];
+      this.$refs.editFormRef.resetFields();
+      this.getTempInfoList();
+    },
     addJobTemplate() {
       this.$refs.addFormRef.validate(async (valid) => {
         console.log(valid);
@@ -449,6 +525,7 @@ export default {
         return this.$message.error("查询环境数据失败！");
       }
       this.editForm = res.data;
+      this.relationList = res.data.ReplaceText;
       this.editDialogVisible = true;
     },
     editJobTemplate() {
@@ -464,6 +541,7 @@ export default {
             TemplateJekins: this.editForm.TemplateJekins,
             TemplateCode: this.editForm.TemplateCode,
             TemplateText: this.editForm.TemplateText,
+            ReplaceText: this.relationList,
           }
         );
         if (res.code !== 200) {

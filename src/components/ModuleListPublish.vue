@@ -224,8 +224,8 @@
           </el-form-item>
           <el-form-item label="部署环境">
             <el-select
-              @change="getNamespaces"
-              v-model="editPipeLineForm.EnvId"
+              @change="getNamespaces() ;getEditDeployStatus()"
+              v-model="selectedDeployEnvItem"
               placeholder="请选择"
             >
               <el-option
@@ -243,15 +243,15 @@
           </el-form-item>
           <el-form-item label="命名空间">
             <el-select
-              @click="getNamespaces"
+              @change="getEditDeployStatus"
               v-model="editPipeLineForm.NameSpace"
               placeholder="请选择"
             >
               <el-option
                 v-for="item in namespaceList"
-                :key="item.metadata.key"
+                :key="item.metadata.name"
                 :label="item.metadata.name"
-                :value="item.metadata.code"
+                :value="item.metadata.name"
               >
               </el-option>
             </el-select>
@@ -444,8 +444,10 @@ export default {
     },
     //获取命名空间
     async getNamespaces() {
+      this.namespaceList = [];
       // 可以发起添加模块的网络请求
       var EnvItem;
+      console.log("请选择环境信息！"+this.selectedDeployEnvItem);
       if (!this.selectedDeployEnvItem) {
         return this.$message.error("请选择环境信息！");
       }
@@ -667,9 +669,19 @@ export default {
     },
     // 获取Deploy部署状态
     async getEditDeployStatus() {
+      this.isinstalled = false;
+      // 可以发起添加模块的网络请求
+        var EnvItem;
+        for (var i = 0; i < this.deployEnvList.length; i++) {
+          if (this.deployEnvList[i].Id === this.selectedDeployEnvItem) {
+            EnvItem = this.deployEnvList[i];
+          }
+        }
         // 获取deploy等是否部署 当前支持deploy
       const { data: Deploy} = await this.$http.get(
-        "/api/getdeploystatus/" + this.dictValue.ModuleCode
+        "/api/getdeploystatus?modulecode=" + this.dictValue.ModuleCode+
+        "&namespace=" + this.editPipeLineForm.NameSpace +
+        "&envid=" + EnvItem.Id
       );
 
       if (Deploy.code !== 200) {
@@ -728,6 +740,7 @@ export default {
     },
     // 展示编辑模块的对话框
     async showPipeLineInfo(id) {
+      
       // 获取gitlab branch
       const { data: gitlabres } = await this.$http.get(
         "/api/getgrlist/" + this.dictValue.GitlabId
@@ -750,11 +763,14 @@ export default {
       if (res.code !== 200) {
         return this.$message.error("查询模块信息失败！");
       }
-
+      this.selectedDeployEnvItem = res.data.EnvId;
       this.editPipeLineForm = res.data;
       console.log("init: "+ res.data)
       this.selectedJobTemple =res.data.YamlId
       this.editPipeLineDialogVisible = true;
+      await this.getNamespaces();
+      //部署状态
+      this.getEditDeployStatus();
     },
     // 关闭编辑对话框
     setEditPipeLineDialogClosed() {
