@@ -180,19 +180,14 @@
             </template>
           </el-table-column>
         </el-table>
-        <el-form-item label="模版yaml">
-          <div class="editor-container">
-            <yaml-editor v-model="AddForm.TemplateText" />
-          </div>
-        </el-form-item>
-        <el-form-item label="模版jenkins">
-          <el-input
-            type="textarea"
-            :rows="20"
-            v-model="AddForm.TemplateJekins"
-            mode="text/yaml"
-          ></el-input>
-        </el-form-item>
+        <label>yaml模版</label>
+        <div class="editor-container">
+          <yaml-editor v-model="AddForm.TemplateText" mode="text/yaml" />
+        </div>
+        <label>jenkins模版</label>
+        <div class="editor-container">
+          <yaml-editor v-model="editForm.TemplateJekins" mode="XML/HTML" />
+        </div>
       </el-form>
       <!-- 底部区域 -->
       <span slot="footer" class="dialog-footer">
@@ -370,7 +365,7 @@ export default {
         template: "",
         Coding: "",
         Remarks: "",
-        update: 0
+        update: 0,
       },
       AddForm: {
         TemplateType: "",
@@ -449,17 +444,17 @@ export default {
       this.AddForm.ReplaceText = JSON.stringify(this.relationList);
     },
     // 更新表中数据
-    updateRemark(rows){
-      console.log(rows)
+    updateRemark(rows) {
+      console.log(rows);
       for (let i = 0; i < this.relationList.length; i++) {
         if (this.relationList[i].relationName == rows.relationName) {
-          this.relationList[i].template =  rows.template
-          rows.update = 0
+          this.relationList[i].template = rows.template;
+          rows.update = 0;
         }
       }
     },
-    handleClick(rows){
-      console.log(rows) 
+    handleClick(rows) {
+      console.log(rows);
     },
     async getTempInfoList() {
       const { data: res } = await this.$http.get(
@@ -488,7 +483,7 @@ export default {
       this.relationName = "";
       this.$refs.addFormRef.resetFields();
     },
-      //
+    //
     editDialogClose() {
       console.log("editDialogClose");
       this.relationList = [];
@@ -498,6 +493,7 @@ export default {
     addJobTemplate() {
       this.$refs.addFormRef.validate(async (valid) => {
         console.log(valid);
+        this.AddForm.ReplaceText = this.relationList;
         if (!valid) return;
         const { data: res } = await this.$http.post("/api/addtc", this.AddForm);
         if (res.code !== 200) {
@@ -524,9 +520,11 @@ export default {
       if (res.code !== 200) {
         return this.$message.error("查询环境数据失败！");
       }
-      this.editForm = res.data;
-      this.relationList = res.data.ReplaceText;
       this.editDialogVisible = true;
+      this.editForm = res.data;
+      if (null !== res.data.ReplaceText ) {
+        this.relationList = res.data.ReplaceText;
+      }
     },
     editJobTemplate() {
       this.$refs.editFormRef.validate(async (valid) => {
@@ -571,7 +569,7 @@ export default {
       var params = {
         template: this.template,
         relationName: this.relationName,
-        update: 0
+        update: 0,
       };
       this.relationList.push(params);
       this.template = "";
