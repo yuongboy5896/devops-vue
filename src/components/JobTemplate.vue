@@ -180,19 +180,14 @@
             </template>
           </el-table-column>
         </el-table>
-        <el-form-item label="模版yaml">
-          <div class="editor-container">
-            <yaml-editor v-model="AddForm.TemplateText" />
-          </div>
-        </el-form-item>
-        <el-form-item label="模版jenkins">
-          <el-input
-            type="textarea"
-            :rows="20"
-            v-model="AddForm.TemplateJekins"
-            mode="text/yaml"
-          ></el-input>
-        </el-form-item>
+        <label>yaml模版</label>
+        <div class="editor-container">
+          <yaml-editor v-model="AddForm.TemplateText" mode="text/yaml" />
+        </div>
+        <label>jenkins模版</label>
+        <div class="editor-container">
+          <yaml-editor v-model="editForm.TemplateJekins" mode="XML/HTML" />
+        </div>
       </el-form>
       <!-- 底部区域 -->
       <span slot="footer" class="dialog-footer">
@@ -224,6 +219,80 @@
         <el-form-item label="模版类型" prop="TemplateType">
           <el-input v-model="editForm.TemplateType"></el-input>
         </el-form-item>
+        <el-form-item label="对应关系" prop="TemplateType">
+          <el-row :gutter="20">
+            <!--item的名称-->
+            <el-col :span="8">
+              <el-input placeholder="请输入对应关系" v-model="template">
+              </el-input>
+            </el-col>
+            <!--item的数量-->
+            <el-col :span="8">
+              <el-select v-model="relationName" placeholder="请选择">
+                <el-option
+                  v-for="item in ObjectList"
+                  :key="item.key"
+                  :label="item.Value"
+                  :value="item.Value"
+                >
+                </el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="4">
+              <el-button type="primary" @click="addRelational()"
+                >添加关系</el-button
+              >
+            </el-col>
+          </el-row>
+          <!--<ul>
+            <li v-for="item in relationList" :key="item.template">
+               {{ item.template }} : {{ item.Coding }}
+            </li>
+          </ul>-->
+        </el-form-item>
+        <el-table :data="relationList" v-if="relationList.length > 0">
+          <el-table-column label="名称" prop="template">
+            <template slot-scope="scope">
+              <el-input
+                placeholder="请输入内容"
+                v-model="scope.row.template"
+                :disabled="scope.row.update == 0 ? true : false"
+                style="width: 75%"
+              ></el-input>
+              <i
+                class="el-icon-edit-outline"
+                style="margin-left: 10px"
+                v-if="scope.row.update == 0"
+                @click="scope.row.update = 1"
+              ></i>
+              <i
+                class="el-icon-check"
+                style="margin-left: 10px"
+                v-else
+                @click="updateRemark(scope.row)"
+              ></i>
+            </template>
+          </el-table-column>
+          <el-table-column label="类型" prop="relationName"></el-table-column>
+          <el-table-column label="操作">
+            <template slot-scope="scope">
+              <!-- 修改按钮 -->
+              <el-button
+                type="primary"
+                size="mini"
+                icon="el-icon-edit"
+                @click="editRalation(scope.row)"
+              ></el-button>
+              <!--删除按钮-->
+              <el-button
+                type="danger"
+                size="mini"
+                icon="el-icon-delete"
+                @click="deleteRelation(scope.row)"
+              ></el-button>
+            </template>
+          </el-table-column>
+        </el-table>
         <label>模版yaml</label>
         <div class="editor-container">
           <yaml-editor v-model="editForm.TemplateText" mode="text/yaml" />
@@ -296,7 +365,7 @@ export default {
         template: "",
         Coding: "",
         Remarks: "",
-        update: 0
+        update: 0,
       },
       AddForm: {
         TemplateType: "",
@@ -356,11 +425,6 @@ export default {
         ],
       },
       //
-      editDialogClose() {
-        this.$refs.editFormRef.resetFields();
-        this.getTempInfoList();
-      },
-      //
     };
   },
   created() {
@@ -380,17 +444,17 @@ export default {
       this.AddForm.ReplaceText = JSON.stringify(this.relationList);
     },
     // 更新表中数据
-    updateRemark(rows){
-      console.log(rows)
+    updateRemark(rows) {
+      console.log(rows);
       for (let i = 0; i < this.relationList.length; i++) {
         if (this.relationList[i].relationName == rows.relationName) {
-          this.relationList[i].template =  rows.template
-          rows.update = 0
+          this.relationList[i].template = rows.template;
+          rows.update = 0;
         }
       }
     },
-    handleClick(rows){
-      console.log(rows) 
+    handleClick(rows) {
+      console.log(rows);
     },
     async getTempInfoList() {
       const { data: res } = await this.$http.get(
@@ -419,9 +483,17 @@ export default {
       this.relationName = "";
       this.$refs.addFormRef.resetFields();
     },
+    //
+    editDialogClose() {
+      console.log("editDialogClose");
+      this.relationList = [];
+      this.$refs.editFormRef.resetFields();
+      this.getTempInfoList();
+    },
     addJobTemplate() {
       this.$refs.addFormRef.validate(async (valid) => {
         console.log(valid);
+        this.AddForm.ReplaceText = this.relationList;
         if (!valid) return;
         const { data: res } = await this.$http.post("/api/addtc", this.AddForm);
         if (res.code !== 200) {
@@ -448,8 +520,11 @@ export default {
       if (res.code !== 200) {
         return this.$message.error("查询环境数据失败！");
       }
-      this.editForm = res.data;
       this.editDialogVisible = true;
+      this.editForm = res.data;
+      if (null !== res.data.ReplaceText ) {
+        this.relationList = res.data.ReplaceText;
+      }
     },
     editJobTemplate() {
       this.$refs.editFormRef.validate(async (valid) => {
@@ -464,6 +539,7 @@ export default {
             TemplateJekins: this.editForm.TemplateJekins,
             TemplateCode: this.editForm.TemplateCode,
             TemplateText: this.editForm.TemplateText,
+            ReplaceText: this.relationList,
           }
         );
         if (res.code !== 200) {
@@ -493,7 +569,7 @@ export default {
       var params = {
         template: this.template,
         relationName: this.relationName,
-        update: 0
+        update: 0,
       };
       this.relationList.push(params);
       this.template = "";
