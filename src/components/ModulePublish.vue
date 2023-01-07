@@ -4,20 +4,6 @@
       <el-tree
         :data="moduleInfolist"
         :props="defaultProps"
-        :current-node-key="current"
-        highlight-current
-        @node-click="handleNodeClick"
-      ></el-tree>
-    </div>
-    <div class="ptwopanel">
-      <Modulelistpublish ref="portalInfo" :dictValue="dictValue">
-      </Modulelistpublish>
-    </div>
-  <div class="pageWrap">
-    <div class="menu">
-      <el-tree
-        :data="moduleInfolist"
-        :props="defaultProps"
         @node-click="handleNodeClick"
       ></el-tree>
     </div>

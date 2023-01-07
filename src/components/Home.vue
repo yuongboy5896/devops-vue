@@ -72,6 +72,7 @@ export default {
         101: "iconfont icon-shangpin",
         102: "iconfont icon-danju",
         145: "iconfont icon-baobiao",
+        104: "iconfont icon-baobiao",
       },
       // 是否折叠
       isCollpase: false,
@@ -180,6 +181,21 @@ export default {
               order: null,
             }
             
+          ],
+          order: 2,
+        },
+        {
+          id: 104,
+          authName: "运维报表",
+          path: "report",
+          children: [
+            {
+              id: 120,
+              authName: "发布报表",
+              path: "jenkinsreport",
+              children: [],
+              order: null,
+            },     
           ],
           order: 2,
         },

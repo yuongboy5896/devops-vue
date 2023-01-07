@@ -10,6 +10,7 @@ import Images from '../components/Images.vue'
 import JobTemplate from '../components/JobTemplate.vue'
 import Vmware from '../components/vwm.vue'
 import Testyaml from '@/components/YamlEditor/CodeEditor.vue';
+import JenkinsReport from '../components/JenkinsReport.vue'
 
 
 
@@ -30,7 +31,8 @@ const routes = [
       { path: '/images', component: Images },
       { path: '/JobTemplate', component: JobTemplate },
       { path: '/vwm', component: Vmware },
-      { path: '/testyaml', component: Testyaml }
+      { path: '/testyaml', component: Testyaml },
+      { path: '/jenkinsreport', component: JenkinsReport }
     ]
   }
 ]

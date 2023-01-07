@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import * as echarts  from "echarts";
 import { 
     Button,
     Form,
@@ -58,5 +59,6 @@ Vue.use(Tag)
 Vue.use(Select)
 Vue.use(Option)
 Vue.use(Tree)
+Vue.prototype.$echarts = echarts
 Vue.prototype.$message = Message
 Vue.prototype.$confirm = MessageBox.confirm
